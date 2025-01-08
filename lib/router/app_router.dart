@@ -15,7 +15,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: AppScreen.home,
       pageBuilder: (context, state) => CustomTransitionPage(
-        child: HomeScreen(),
+        child: const HomeScreen(),
         transitionDuration: const Duration(milliseconds: 500),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(

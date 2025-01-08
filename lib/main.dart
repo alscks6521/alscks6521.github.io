@@ -4,9 +4,12 @@ import 'package:github_portfolio/common/controllers/themeController.dart';
 import 'package:github_portfolio/common/theme/app_theme.dart';
 import 'package:github_portfolio/common/widgets/mouse_widget.dart';
 import 'package:github_portfolio/router/app_router.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void main() {
   Get.put(ThemeController());
+  // Hash 방식을 Path 방식으로 변경
+  setUrlStrategy(PathUrlStrategy());
   runApp(const MyApp());
 }
 

@@ -160,7 +160,7 @@ class ResponsiveCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 TextSpan(
-                  text: 'alscks6521 alscks6521',
+                  text: '#유연한 #개발 #화이팅',
                 ),
               ],
             ),

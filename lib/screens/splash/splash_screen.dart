@@ -30,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     // 텍스트 ''
     _textController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     });
 
     // 홈 화면으로 이동하기 전에 페이드아웃 효과 추가
-    Future.delayed(const Duration(milliseconds: 1600), () async {
+    Future.delayed(const Duration(milliseconds: 2000), () async {
       // 기존 컨텐츠 페이드아웃 텍스트 => 로고
       await _textController.reverse();
       await _logoController.reverse();
@@ -149,21 +149,21 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   child: Column(
                     children: [
                       Text(
-                        '반가워요',
+                        'alscks6521. Git.io',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 16,
                           fontWeight: FontWeight.w300,
-                          letterSpacing: 8,
+                          letterSpacing: 2,
                           color: Colors.grey[800],
                         ),
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        '치료사',
+                        '안녕하세요, 개발자 김민성입니다.',
                         style: TextStyle(
-                          fontSize: 32,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 4,
+                          letterSpacing: 2,
                         ),
                       ),
                     ],
