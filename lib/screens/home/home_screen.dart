@@ -118,84 +118,90 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 _handleScroll(signal);
               }
             },
-            child: PageView(
-              controller: _pageController,
-              scrollDirection: Axis.vertical,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                // 첫 번째 페이지 - 인트로/메인
-                PageSection(
-                  child: AnimatedPageContent(
-                    pageIndex: 0,
-                    content: MainIntroContent(
-                      primaryWidget: const ResponsiveCard(),
-                      secondaryWidgets: [],
+            child: GestureDetector(
+              onVerticalDragUpdate: (details) {
+                _targetPage += details.delta.dy * 0.001; // 스크롤 감도 조절
+                _targetPage = _targetPage.clamp(0.0, 6.0);
+              },
+              child: PageView(
+                controller: _pageController,
+                scrollDirection: Axis.vertical,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  // 첫 번째 페이지 - 인트로/메인
+                  PageSection(
+                    child: AnimatedPageContent(
+                      pageIndex: 0,
+                      content: MainIntroContent(
+                        primaryWidget: const ResponsiveCard(),
+                        secondaryWidgets: [],
+                      ),
+                      primaryAnimation: AnimationType.curvedSlideRight,
+                      secondaryAnimation: AnimationType.fade,
                     ),
-                    primaryAnimation: AnimationType.curvedSlideRight,
-                    secondaryAnimation: AnimationType.fade,
                   ),
-                ),
 
-                // 두 번째 페이지 - 소개 또는 주요 섹션
-                const PageSection(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('2', style: TextStyle(fontSize: 30)),
-                      ],
+                  // 두 번째 페이지 - 소개 또는 주요 섹션
+                  const PageSection(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('2', style: TextStyle(fontSize: 30)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // 세 번째 페이지
-                const PageSection(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('3', style: TextStyle(fontSize: 30)),
-                      ],
+                  // 세 번째 페이지
+                  const PageSection(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('3', style: TextStyle(fontSize: 30)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // 네 번째 페이지
-                const PageSection(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // 네 번째 페이지 내용
-                      ],
+                  // 네 번째 페이지
+                  const PageSection(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // 네 번째 페이지 내용
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // 다섯 번째 페이지
-                const PageSection(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // 다섯 번째 페이지 내용
-                      ],
+                  // 다섯 번째 페이지
+                  const PageSection(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // 다섯 번째 페이지 내용
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                // 여섯 번째 페이지
-                const PageSection(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // 여섯 번째 페이지 내용
-                      ],
+                  // 여섯 번째 페이지
+                  const PageSection(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // 여섯 번째 페이지 내용
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Padding(
