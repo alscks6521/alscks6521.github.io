@@ -7,7 +7,6 @@ import 'package:github_portfolio/common/controllers/themeController.dart';
 import 'package:github_portfolio/screens/home/widgets/profile_card_widget.dart';
 import 'package:github_portfolio/screens/home/widgets/slide_box_widget.dart';
 
-// 각 페이지의 기본 구조를 정의하는 위젯
 class PageSection extends StatelessWidget {
   final Widget child;
   final Color? backgroundColor;
@@ -40,9 +39,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final PageController _pageController = PageController();
   double _targetPage = 0;
   double _currentPage = 0;
+  double _accumulatedDelta = 0;
+  DateTime _lastWheelTime = DateTime.now();
   late AnimationController _smoothScrollController;
-  double _dragStartY = 0;
-  double _dragAccumulator = 0;
 
   @override
   void initState() {
@@ -65,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _updateScroll() {
-    const lerpFactor = 0.04;
+    const lerpFactor = 0.02;
 
     if (_currentPage != _targetPage) {
       _currentPage = lerpDouble(_currentPage, _targetPage, lerpFactor) ?? _currentPage;
@@ -79,35 +78,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
-  void _handleScroll(PointerScrollEvent event) {
-    const scrollSensitivity = 0.001;
-    const maxPage = 6.0;
+  void _handleWheelScroll(PointerScrollEvent event) {
+    final now = DateTime.now();
+    const threshold = 100.0; // 페이지 전환을 위한 임계값
+    const cooldown = Duration(milliseconds: 50); // 휠 이벤트 쓰로틀링
 
-    _targetPage += event.scrollDelta.dy * scrollSensitivity;
-    _targetPage = _targetPage.clamp(0.0, maxPage);
-  }
+    if (now.difference(_lastWheelTime) < cooldown) {
+      return;
+    }
+    _lastWheelTime = now;
 
-  // 터치 시작 처리
-  void _handleDragStart(DragStartDetails details) {
-    _dragStartY = details.globalPosition.dy;
-    _dragAccumulator = 0;
-  }
+    _accumulatedDelta += event.scrollDelta.dy;
 
-  // 터치 드래그 처리
-  void _handleDragUpdate(DragUpdateDetails details) {
-    const sensitivity = 0.01;
-    const maxPage = 6.0;
-
-    _dragAccumulator += (details.globalPosition.dy - _dragStartY) * sensitivity;
-    _dragStartY = details.globalPosition.dy;
-
-    _targetPage -= _dragAccumulator;
-    _targetPage = _targetPage.clamp(0.0, maxPage);
-  }
-
-  // 터치 종료 처리
-  void _handleDragEnd(DragEndDetails details) {
-    _dragAccumulator = 0;
+    if (_accumulatedDelta.abs() >= threshold) {
+      if (_accumulatedDelta > 0) {
+        _targetPage = (_targetPage + 1).clamp(0.0, 5.0);
+      } else {
+        _targetPage = (_targetPage - 1).clamp(0.0, 5.0);
+      }
+      _accumulatedDelta = 0; // 누적값 리셋
+    }
   }
 
   @override
@@ -132,94 +122,84 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
           ),
-          GestureDetector(
-            onVerticalDragStart: _handleDragStart,
-            onVerticalDragUpdate: _handleDragUpdate,
-            onVerticalDragEnd: _handleDragEnd,
-            child: Listener(
-              onPointerSignal: (signal) {
-                if (signal is PointerScrollEvent) {
-                  _handleScroll(signal);
-                }
-              },
-              child: PageView(
-                controller: _pageController,
-                scrollDirection: Axis.vertical,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  // 첫 번째 페이지 - 인트로/메인
-                  PageSection(
-                    child: AnimatedPageContent(
-                      pageIndex: 0,
-                      content: MainIntroContent(
-                        primaryWidget: const ResponsiveCard(),
-                        secondaryWidgets: [],
-                      ),
-                      primaryAnimation: AnimationType.curvedSlideRight,
-                      secondaryAnimation: AnimationType.fade,
+          Listener(
+            onPointerSignal: (signal) {
+              if (signal is PointerScrollEvent) {
+                _handleWheelScroll(signal);
+              }
+            },
+            child: PageView(
+              controller: _pageController,
+              scrollDirection: Axis.vertical,
+              physics: const NeverScrollableScrollPhysics(), // 드래그 스크롤 비활성화
+              children: [
+                // 첫 번째 페이지 - 인트로/메인
+                PageSection(
+                  child: AnimatedPageContent(
+                    pageIndex: 0,
+                    content: MainIntroContent(
+                      primaryWidget: const ResponsiveCard(),
+                      secondaryWidgets: [],
                     ),
+                    primaryAnimation: AnimationType.curvedSlideRight,
+                    secondaryAnimation: AnimationType.fade,
                   ),
+                ),
 
-                  // 나머지 페이지들...
-                  const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('2', style: TextStyle(fontSize: 30)),
-                        ],
-                      ),
+                // 두 번째 페이지
+                const PageSection(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('2', style: TextStyle(fontSize: 30)),
+                      ],
                     ),
                   ),
-                  // 세 번째 페이지
-                  const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('3', style: TextStyle(fontSize: 30)),
-                        ],
-                      ),
-                    ),
-                  ),
+                ),
 
-                  // 네 번째 페이지
-                  const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 네 번째 페이지 내용
-                        ],
-                      ),
+                // 세 번째 페이지
+                const PageSection(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('3', style: TextStyle(fontSize: 30)),
+                      ],
                     ),
                   ),
+                ),
 
-                  // 다섯 번째 페이지
-                  const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 다섯 번째 페이지 내용
-                        ],
-                      ),
+                // 네 번째 페이지
+                const PageSection(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [],
                     ),
                   ),
+                ),
 
-                  // 여섯 번째 페이지
-                  const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 여섯 번째 페이지 내용
-                        ],
-                      ),
+                // 다섯 번째 페이지
+                const PageSection(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [],
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // 여섯 번째 페이지
+                const PageSection(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Padding(
