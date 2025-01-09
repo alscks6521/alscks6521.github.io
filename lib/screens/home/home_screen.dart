@@ -40,8 +40,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final PageController _pageController = PageController();
   double _targetPage = 0;
   double _currentPage = 0;
-  bool _isDragging = false;
-  double _startDragPosition = 0.0;
   late AnimationController _smoothScrollController;
 
   @override
@@ -67,15 +65,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   // 부드러운 스크롤 업데이트
   void _updateScroll() {
-    const lerpFactor = 0.04; // 0.1에서 0.2로 증가 - 더 빠른 응답성
+    const lerpFactor = 0.04; // 보간 계수 (값이 작을수록 더 부드러움)
 
     if (_currentPage != _targetPage) {
       _currentPage = lerpDouble(_currentPage, _targetPage, lerpFactor) ?? _currentPage;
 
+      // 페이지 위치 및 진행도 업데이트
       if (mounted && context.mounted) {
         _pageController.jumpTo(_currentPage * MediaQuery.of(context).size.height);
       }
 
+      // WaveController에 현재 페이지 값 전달
       final controller = Get.find<WaveController>();
       controller.updateProgress(_currentPage);
     }
@@ -112,30 +112,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
           ),
-          Listener(
-            onPointerSignal: (signal) {
-              if (signal is PointerScrollEvent) {
-                _handleScroll(signal);
-              }
-            },
-            child: GestureDetector(
-              onVerticalDragStart: (details) {
-                // 드래그 시작할 때의 초기 위치 저장
-                _isDragging = true;
-                _startDragPosition = details.globalPosition.dy;
-              },
-              onVerticalDragUpdate: (details) {
-                if (_isDragging) {
-                  // 현재 위치와 시작 위치의 차이를 계산
-                  double dragDistance = details.globalPosition.dy - _startDragPosition;
-                  _targetPage -= dragDistance * 0.002; // 감도 조절
+          MouseRegion(
+            child: Listener(
+              onPointerSignal: (signal) {
+                if (signal is PointerScrollEvent) {
+                  _targetPage += signal.scrollDelta.dy * 0.001;
                   _targetPage = _targetPage.clamp(0.0, 6.0);
-                  _startDragPosition = details.globalPosition.dy; // 위치 업데이트
                 }
               },
-              onVerticalDragEnd: (details) {
-                // 드래그 종료
-                _isDragging = false;
+              onPointerPanZoomUpdate: (event) {
+                // 모바일에서의 스크롤 처리
+                _targetPage += event.panDelta.dy * 0.001;
+                _targetPage = _targetPage.clamp(0.0, 6.0);
               },
               child: PageView(
                 controller: _pageController,
