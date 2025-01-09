@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             },
             child: GestureDetector(
               onVerticalDragUpdate: (details) {
-                _targetPage += details.delta.dy * 0.1; // 스크롤 감도 조절
+                _targetPage += details.delta.dy * 0.004; // 스크롤 감도 조절
                 _targetPage = _targetPage.clamp(0.0, 6.0);
               },
               child: PageView(
