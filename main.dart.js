@@ -73169,7 +73169,7 @@ s.e=r
 s.e=B.c.fH(r,0,6)}},
 $S:74}
 A.af9.prototype={
-$1(a){var s=this.a,r=s.e+a.b.b*0.004
+$1(a){var s=this.a,r=s.e-a.b.b*0.004
 s.e=r
 s.e=B.c.fH(r,0,6)},
 $S:15}
@@ -73198,7 +73198,7 @@ A.Jq.prototype={
 I(a){var s,r,q,p=null,o=A.bi(a,p,t.w).w.a,n=B.c.fH(o.a*0.3,300,600),m=o.b,l=A.ar(a),k=A.W0(8),j=A.b([new A.cZ(0,B.bS,A.ar(a).ax.a===B.I?A.Z(B.c.aa(76.5),0,0,0):A.Z(B.c.aa(25.5),0,0,0),B.qF,10)],t.sq),i=t.E,h=A.aml(A.b([new A.Fe(B.xl,17.6,p),A.fc(p,p,6),A.ik("alscks6521",p,p,A.hA(p,p,p,p,p,p,p,p,p,p,p,12,p,p,B.ds,p,p,!0,p,p,p,p,p,p,p,p)),B.wm,A.nU(B.BD,p,22)],i),B.a3,B.aG),g=A.oT(a).BI(!1),f=A.b([],i)
 if(m>=400)f.push(new A.EE(1.3,new A.ww(A.aC5(p,p,new A.pR("assets/images/my_image.jpg",p,p)),B.k0,p),p))
 f.push(new A.cr(new A.aW(12,12,12,12),A.aml(A.b([A.nU(B.BB,p,22),A.fc(p,p,12),A.nU(B.By,p,22),A.fc(p,p,12),A.nU(B.BF,p,22),B.wm,A.nU(B.Bx,p,22)],i),B.a3,B.aG),p))
-f.push(new A.cr(new A.aW(12,0,12,0),A.ik("\uc88b\uc544\uc694 2\uac1c",p,p,A.hA(p,p,p,p,p,p,p,p,p,p,p,12,p,p,B.ds,p,p,!0,p,p,p,p,p,p,p,p)),p))
+f.push(new A.cr(new A.aW(12,0,12,0),A.ik("\uc88b\uc544\uc694 3\uac1c",p,p,A.hA(p,p,p,p,p,p,p,p,p,p,p,12,p,p,B.ds,p,p,!0,p,p,p,p,p,p,p,p)),p))
 s=A.ar(a).p2.y
 s=A.a7S(p,p,p,B.ai,p,p,!0,p,A.ct(B.Dx,A.hA(p,p,s==null?p:s.b,p,p,p,p,p,p,p,p,12,p,p,p,p,p,!0,p,p,p,p,p,p,p,p),p),B.aK,p,p,B.a5,B.W)
 r=A.fc(p,12,p)
