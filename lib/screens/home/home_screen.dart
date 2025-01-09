@@ -41,16 +41,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   double _targetPage = 0;
   double _currentPage = 0;
   late AnimationController _smoothScrollController;
+  double _dragStartY = 0;
+  double _dragAccumulator = 0;
 
   @override
   void initState() {
     super.initState();
     Get.put(WaveController());
 
-    // 부드러운 스크롤을 위한 애니메이션 컨트롤러
     _smoothScrollController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 16), // 60fps
+      duration: const Duration(milliseconds: 16),
     )..addListener(_updateScroll);
 
     _smoothScrollController.repeat();
@@ -63,31 +64,50 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  // 부드러운 스크롤 업데이트
   void _updateScroll() {
-    const lerpFactor = 0.04; // 보간 계수 (값이 작을수록 더 부드러움)
+    const lerpFactor = 0.04;
 
     if (_currentPage != _targetPage) {
       _currentPage = lerpDouble(_currentPage, _targetPage, lerpFactor) ?? _currentPage;
 
-      // 페이지 위치 및 진행도 업데이트
       if (mounted && context.mounted) {
         _pageController.jumpTo(_currentPage * MediaQuery.of(context).size.height);
       }
 
-      // WaveController에 현재 페이지 값 전달
       final controller = Get.find<WaveController>();
       controller.updateProgress(_currentPage);
     }
   }
 
   void _handleScroll(PointerScrollEvent event) {
-    const scrollSensitivity = 0.001; // 스크롤 감도 (값이 작을수록 부드러움)
-    const maxPage = 6.0; // 전체 페이지 수 - 1
+    const scrollSensitivity = 0.001;
+    const maxPage = 6.0;
 
-    // 목표 페이지 업데이트
     _targetPage += event.scrollDelta.dy * scrollSensitivity;
     _targetPage = _targetPage.clamp(0.0, maxPage);
+  }
+
+  // 터치 시작 처리
+  void _handleDragStart(DragStartDetails details) {
+    _dragStartY = details.globalPosition.dy;
+    _dragAccumulator = 0;
+  }
+
+  // 터치 드래그 처리
+  void _handleDragUpdate(DragUpdateDetails details) {
+    const sensitivity = 0.01;
+    const maxPage = 6.0;
+
+    _dragAccumulator += (details.globalPosition.dy - _dragStartY) * sensitivity;
+    _dragStartY = details.globalPosition.dy;
+
+    _targetPage -= _dragAccumulator;
+    _targetPage = _targetPage.clamp(0.0, maxPage);
+  }
+
+  // 터치 종료 처리
+  void _handleDragEnd(DragEndDetails details) {
+    _dragAccumulator = 0;
   }
 
   @override
@@ -112,21 +132,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
           ),
-          Listener(
-            onPointerSignal: (signal) {
-              if (signal is PointerScrollEvent) {
-                _handleScroll(signal);
-              }
-            },
-            child: GestureDetector(
-              onVerticalDragEnd: (details) {
-                // 드래그 종료시 속도 체크
-                if (details.primaryVelocity! > 0) {
-                  // 아래로 드래그
-                  _targetPage = (_targetPage - 1).clamp(0.0, 6.0);
-                } else {
-                  // 위로 드래그
-                  _targetPage = (_targetPage + 1).clamp(0.0, 6.0);
+          GestureDetector(
+            onVerticalDragStart: _handleDragStart,
+            onVerticalDragUpdate: _handleDragUpdate,
+            onVerticalDragEnd: _handleDragEnd,
+            child: Listener(
+              onPointerSignal: (signal) {
+                if (signal is PointerScrollEvent) {
+                  _handleScroll(signal);
                 }
               },
               child: PageView(
@@ -147,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                   ),
 
-                  // 두 번째 페이지 - 소개 또는 주요 섹션
+                  // 나머지 페이지들...
                   const PageSection(
                     child: Center(
                       child: Column(
@@ -158,7 +171,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                     ),
                   ),
-
                   // 세 번째 페이지
                   const PageSection(
                     child: Center(
