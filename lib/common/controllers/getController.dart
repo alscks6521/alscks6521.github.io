@@ -61,7 +61,7 @@ class OvalWavePainter extends CustomPainter {
     final shadowPaint = Paint()
       ..color = color.withOpacity(0.1)
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
     // 메인 Paint 객체
     final paint = Paint()..style = PaintingStyle.fill;
