@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static const Color defColor = Colors.white;
-  static const Color waveBlue = Color(0xFF56BCFF);
+  static const Color waveBlue = Color.fromARGB(255, 203, 203, 203);
 }
 
 class AppFontColors {

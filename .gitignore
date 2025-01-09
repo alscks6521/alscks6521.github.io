@@ -31,6 +31,10 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Web related
+/web/.sass-cache/
+.web/
+
 # Symbolication related
 app.*.symbols
 
@@ -42,4 +46,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-.codegpt
+# Environment variable files
+.env
+.env.*

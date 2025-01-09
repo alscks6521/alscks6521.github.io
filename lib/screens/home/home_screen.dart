@@ -2,8 +2,10 @@ import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:github_portfolio/common/controllers/getController.dart';
-import 'package:github_portfolio/common/controllers/themeController.dart';
+import 'package:github_portfolio/common/controllers/get_controller.dart';
+import 'package:github_portfolio/common/controllers/theme_controller.dart';
+import 'package:github_portfolio/common/widgets/animated_page_content.dart';
+import 'package:github_portfolio/screens/home/pages/one_widgets/slide_box.dart';
 import 'package:github_portfolio/screens/home/widgets/profile_card_widget.dart';
 import 'package:github_portfolio/screens/home/widgets/slide_box_widget.dart';
 
@@ -23,7 +25,10 @@ class PageSection extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
-      color: backgroundColor ?? Colors.transparent,
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.transparent,
+        // border: Border.all(color: Colors.red, width: 2),
+      ),
       child: child,
     );
   }
@@ -50,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     // 부드러운 스크롤을 위한 애니메이션 컨트롤러
     _smoothScrollController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 16), // 60fps
+      duration: const Duration(milliseconds: 33), // 60fps
     )..addListener(_updateScroll);
 
     _smoothScrollController.repeat();
@@ -82,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _handleScroll(PointerScrollEvent event) {
-    const scrollSensitivity = 0.0004; // 스크롤 감도 (값이 작을수록 부드러움)
+    const scrollSensitivity = 0.0003; // 스크롤 감도 (값이 작을수록 부드러움)
     const maxPage = 6.0; // 전체 페이지 수 - 1
 
     // 목표 페이지 업데이트
@@ -143,62 +148,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                   // 두 번째 페이지 - 소개 또는 주요 섹션
                   const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('2', style: TextStyle(fontSize: 30)),
-                        ],
-                      ),
-                    ),
+                    child: SlideBox(),
                   ),
 
                   // 세 번째 페이지
                   const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('3', style: TextStyle(fontSize: 30)),
-                        ],
-                      ),
-                    ),
+                    child: Text('3', style: TextStyle(fontSize: 30)),
                   ),
 
                   // 네 번째 페이지
                   const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 네 번째 페이지 내용
-                        ],
-                      ),
-                    ),
+                    child: Text('4', style: TextStyle(fontSize: 30)),
                   ),
 
                   // 다섯 번째 페이지
                   const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 다섯 번째 페이지 내용
-                        ],
-                      ),
-                    ),
+                    child: Text('5', style: TextStyle(fontSize: 30)),
                   ),
 
                   // 여섯 번째 페이지
                   const PageSection(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 여섯 번째 페이지 내용
-                        ],
-                      ),
-                    ),
+                    child: Text('6', style: TextStyle(fontSize: 30)),
                   ),
                 ],
               ),

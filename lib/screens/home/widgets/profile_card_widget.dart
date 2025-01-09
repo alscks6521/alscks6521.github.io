@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:github_portfolio/common/app_assets.dart';
+import 'package:github_portfolio/screens/home/widgets/link_widget.dart';
 
 class ResponsiveCard extends StatelessWidget {
   const ResponsiveCard({super.key});
@@ -12,13 +13,15 @@ class ResponsiveCard extends StatelessWidget {
     const minWidth = 300.0;
     final cardWidth = (size.width * 0.3).clamp(minWidth, maxWidth);
 
-    const fontSize = 12.0;
+    const fontSize = 16.0;
     const iconSize = 22.0;
     const padding = 12.0;
 
     // 이미지를 표시할 최소 높이 설정
-    const minHeightForImage = 400.0;
+    const minHeightForImage = 370.0;
     final shouldShowImage = size.height >= minHeightForImage;
+    const minHeightIcons = 600.0;
+    final shouldShowIcons = size.height >= minHeightIcons;
 
     return Align(
       alignment: Alignment.center,
@@ -62,20 +65,26 @@ class ResponsiveCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 조건부로 이미지 표시
-                      if (shouldShowImage)
-                        AspectRatio(
-                          aspectRatio: 1.3,
+                      if (size.height >= minHeightForImage)
+                        SizedBox(
+                          width: cardWidth, // 가로 크기는 카드 너비로 고정
+                          height: shouldShowImage
+                              ? (size.height / 1000) * 300 // 화면 높이에 비례하여 세로 크기 조절
+                              : 0, // 완전히 사라질 때
                           child: Image.asset(
                             AppAssets.myPicture,
                             fit: BoxFit.cover,
                           ),
                         ),
-
-                      // 나머지 컨텐츠
-                      _buildActions(padding, iconSize),
-                      _buildLikes(padding, fontSize),
+                      if (shouldShowIcons) _buildActions(padding, iconSize),
+                      if (shouldShowIcons) _buildLikes(padding, fontSize),
                       _buildContent(context, padding, fontSize),
                       _buildDateTime(context, fontSize),
+                      const SocialLinks(
+                        githubUrl: 'https://github.com/your-username',
+                        notionUrl: 'https://notion.so/your-workspace',
+                        instagramUrl: 'https://instagram.com/your-username',
+                      ),
                     ],
                   ),
                 ),
