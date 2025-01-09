@@ -112,20 +112,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
           ),
-          MouseRegion(
-            child: Listener(
-              onPointerSignal: (signal) {
-                if (signal is PointerScrollEvent) {
-                  _targetPage += signal.scrollDelta.dy * 0.001;
-                  _targetPage = _targetPage.clamp(0.0, 6.0);
-                }
-              },
-              onPointerPanZoomUpdate: (event) {
-                if (event.panDelta.dy > 0) {
-                  // 아래로 스크롤
+          Listener(
+            onPointerSignal: (signal) {
+              if (signal is PointerScrollEvent) {
+                _handleScroll(signal);
+              }
+            },
+            child: GestureDetector(
+              onVerticalDragEnd: (details) {
+                // 드래그 종료시 속도 체크
+                if (details.primaryVelocity! > 0) {
+                  // 아래로 드래그
                   _targetPage = (_targetPage - 1).clamp(0.0, 6.0);
                 } else {
-                  // 위로 스크롤
+                  // 위로 드래그
                   _targetPage = (_targetPage + 1).clamp(0.0, 6.0);
                 }
               },
