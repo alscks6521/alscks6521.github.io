@@ -121,7 +121,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 }
               },
               onPointerPanZoomUpdate: (event) {
-                // 팬 제스처의 방향만 체크하여 페이지 전환
                 if (event.panDelta.dy > 0) {
                   // 아래로 스크롤
                   _targetPage = (_targetPage - 1).clamp(0.0, 6.0);

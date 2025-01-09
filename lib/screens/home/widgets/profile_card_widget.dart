@@ -132,7 +132,7 @@ class ResponsiveCard extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: padding),
       child: Text(
-        '좋아요 2개',
+        '좋아요 1개',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: fontSize,
