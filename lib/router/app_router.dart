@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:github_portfolio/screens/home/home_screen.dart';
-import 'package:github_portfolio/screens/splash/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final GoRouter router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/home',
   routes: [
-    GoRoute(
-      path: '/',
-      pageBuilder: (context, state) => const NoTransitionPage(
-        child: SplashScreen(),
-      ),
-    ),
     GoRoute(
       path: AppScreen.home,
       pageBuilder: (context, state) => CustomTransitionPage(
