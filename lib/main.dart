@@ -8,7 +8,6 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 void main() {
   Get.put(ThemeController());
-  // Hash 방식을 Path 방식으로
   setUrlStrategy(PathUrlStrategy());
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());

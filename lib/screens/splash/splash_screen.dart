@@ -24,13 +24,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     // 로고 애니메이션 컨트롤러
     _logoController = AnimationController(
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
     // 텍스트 ''
     _textController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
