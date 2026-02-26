@@ -1,0 +1,89 @@
+{
+  "@@locale": "en",
+
+  "prev": "Prev",
+  "next": "Next",
+  "cancel": "Cancel",
+  "confirm": "Confirm", 
+  
+  "changeFailed": "Change Failed",
+  "deliveryFailure": "Delivery Failure",
+  "authenticationFailure":"Authentication Failure",
+
+  "login": "Login",
+  "serviceLogin": "Service Login",
+  "serviceLoginSubTitle": "You must log in to access the system.",
+  "servicePasswordSubTitle":"Please log in with your new password",
+  "backToLogin": "Go back",
+  "findId": "Find ID",
+  "patchPassword": "Change Password",
+  "patchSuccessPassword" : "Password change complete",
+  "send" : "Send",
+  
+  "name" : "Name",
+  "inputName" : "Please enter your Name.",
+
+  "birthDate" : "Birth Date",
+  
+  "id": "ID",
+  "inputId": "Please enter your ID.",
+  "password": "Password",
+  "verifyPassword": "Verify Password.",
+  "inputPassword": "Please enter your password.",
+
+  "passwordNotMatch": "Password does not match.",
+  "passwordValid1": "Password must be 8 to 20 characters long and contain at least 3 of the following: uppercase and lowercase letters, numbers, and special characters.",
+
+  "phoneNumber": "Phone Number",
+  "inputPhoneNumber": "Please enter your phone number.",
+  "phoneNumberNotFormat": "Invalid phone number format.",
+
+  "authenticationNumber": "Authentication Code",
+  "inputAuthenticationNumber": "Please enter the authentication code.",
+  "authenticationNumberFirst": "Please send the authentication code first.",
+
+  "noNewNotification" :"There are no new notifications.",
+  "goToApplicationHistory" : "Go to application history",
+  "documentVerification" : "Document verification",
+  "documentBox" : "Document box",
+  "goToDocumentBox" : "Go to Document Box",
+  "recentDocuments" : "Recent Doc",
+  "confirmationDocument" : "Con Doc",
+  "unidentifiedDocument" : "Un Doc",
+
+  "reportDetails" : "Report Details",
+  "inputFillOutTheNearReport" : "Please fill out the near-accident report.",
+  "writeReportDetails" : "Write report details",
+  "pleaseAttachTheNearReportFile" : "Please attach the near-accident report file.",
+
+  "instructionsForCompletingReport":"Instructions for completing a report",
+  "checkTheWrittenContent":"  • The administrator can check the written content.",
+  "pleaseBrieflyDescribeTheNear": "  • Please briefly describe the near-accident.",
+
+  "informationOnAttachingReportFile" : "Information on attaching report file",
+  "registeredFilesCheckedByAdmin" : "  • Registered files can be checked by the administrator.",
+
+  "selectFromAlbum" : "Select from album",
+  "cameraShooting" : "camera shooting",
+  "recordingFile" : "recording file",
+  "submitWithoutAttachments" : "Submit without attachments",
+
+  "missReporthasBeenReceived" : "The near miss report has been received.",
+  "feedbackWait": "We are generating near-accident feedback tailored to your application. Please wait.",
+
+  "gatherData" : "gather data",
+   "gatherData2" : "We are reading the submitted report.",
+   "analyzeData" : "Analyze your data",
+  "analyzeData2" : "We are analyzing near-miss data.",
+  "creatingAction" : "Creating an action",
+  "creatingAction2" : "We are creating the right action for your report.",
+
+  "greeting" : "Hello",
+
+  "reportNearMiss" : "Report a near miss",
+  "reportNearMissInfo" :"Report of a near miss accident that occurred during field work",
+  "regularPeriodicInspection" : "Regular/periodic inspection",
+
+  "immediateAction" : "Immediate action"
+  
+}
