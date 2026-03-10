@@ -18,7 +18,7 @@ class AppTheme {
     required FontWeight fontWeight,
     double? letterSpacing,
     double? height,
-    Color? color,
+    Color? color = Colors.black,
   }) {
     // Android에서 fontWeight만으로 적용이 불안정한 케이스가 있어서
     // fontVariations를 항상 넣고, fontWeight도 같이 둠(대부분 안정적)
@@ -39,9 +39,9 @@ class AppTheme {
         displayMedium: _ts(fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.2),
         displaySmall: _ts(fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.2),
 
-        headlineLarge: _ts(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: -0.2),
-        headlineMedium: _ts(fontSize: 24, fontWeight: FontWeight.w400, letterSpacing: -0.2),
-        headlineSmall: _ts(fontSize: 9, fontWeight: FontWeight.w700),
+        headlineLarge: _ts(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.2), //
+        headlineMedium: _ts(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.2), //
+        headlineSmall: _ts(fontSize: 18, fontWeight: FontWeight.w700), //
 
         titleLarge: _ts(fontSize: 35, fontWeight: FontWeight.w600, letterSpacing: -0.2), //
         titleMedium: _ts(fontSize: 25, fontWeight: FontWeight.w400, letterSpacing: -0.2), //

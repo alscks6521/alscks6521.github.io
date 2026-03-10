@@ -22,14 +22,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final PageController _pageController;
   double _pageProgress = 0.0;
 
-  // 섹션별 스크롤 컨트롤러 제어용임!
   final ScrollController _aboutScrollController = ScrollController();
   final ScrollController _projectScrollController = ScrollController();
+
+  bool _aboutJustArrivedFromProject = false;
+
+  // 마우스휠 전용
+  bool _wheelSnapping = false;
+
+  // Home -> About 터치전용
+  bool _isSnappingToProject = false;
+  bool _touchActive = false; // home페이지에서 시작한 터치인지 변수
+  bool _touchConsumed = false;
 
   @override
   void initState() {
     super.initState();
-
     _pageController = PageController();
     _pageController.addListener(_onPageChanged);
 
@@ -37,17 +45,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     );
-
     _imageController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     );
-
     _titleFade = CurvedAnimation(parent: _titleController, curve: Curves.easeIn);
     _imageFade = CurvedAnimation(parent: _imageController, curve: Curves.easeIn);
 
     _titleController.forward();
-
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) _imageController.forward();
     });
@@ -59,42 +64,189 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _titleController.dispose();
     _imageController.dispose();
     _pageController.dispose();
-
     _aboutScrollController.dispose();
     _projectScrollController.dispose();
-
     super.dispose();
   }
 
   void _onPageChanged() {
     if (!mounted) return;
-    setState(() {
-      _pageProgress = (_pageController.page ?? 0.0).clamp(0.0, 1.0);
-    });
+    final page = _pageController.page ?? 0.0;
+    setState(() => _pageProgress = page.clamp(0.0, 2.0));
   }
 
-  // PageView제오ㅓ
-  void _onScroll(PointerSignalEvent event) {
+  // ──────────────────────────────────────────────────────
+  // 페이지 스냅 (마우스 휠 전용 가드 사용)
+  // ──────────────────────────────────────────────────────
+  Future<void> _wheelSnapToPage(int page) async {
+    if (_wheelSnapping) return;
+    _wheelSnapping = true;
+    try {
+      await _pageController.animateToPage(
+        page,
+        duration: const Duration(milliseconds: 480),
+        curve: Curves.easeOutCubic,
+      );
+    } finally {
+      _wheelSnapping = false;
+    }
+  }
+
+  Future<void> _wheelSnapToOffset(double offset) async {
+    if (_wheelSnapping) return;
+    _wheelSnapping = true;
+    try {
+      await _pageController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 480),
+        curve: Curves.easeOutCubic,
+      );
+    } finally {
+      _wheelSnapping = false;
+    }
+  }
+
+  // 트랙패드/터치 전용
+  Future<void> _snapToPage(int page) async {
+    await _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 480),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  // 마우스휠 / 트랙패드
+  void _onPointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
     if (!_pageController.hasClients) return;
 
-    final currentPage = _pageController.page ?? 0.0;
+    final dy = event.scrollDelta.dy;
+    final isTrackpad = dy.abs() < 50;
+    final page = _pageController.page ?? 0.0;
 
-    if (currentPage >= 0.9) return;
+    if (page >= 0.99) {
+      _handleAboutScroll(dy, isTrackpad);
+      return;
+    }
+
+    // Home 페이지
+    final viewport = _pageController.position.viewportDimension;
+    final maxOffset = viewport;
+    final midOffset = viewport * 0.5;
+
+    if (isTrackpad) {
+      final newOffset = (_pageController.offset + dy * 0.5).clamp(0.0, maxOffset);
+      _pageController.jumpTo(newOffset);
+
+      // 끝까지 밀면 About으로!
+      if (newOffset >= maxOffset) {
+        _snapToPage(1);
+      }
+    } else {
+      if (_wheelSnapping) return;
+      if (dy > 0) {
+        if (page < 0.5) {
+          _wheelSnapToOffset(midOffset);
+        } else {
+          _wheelSnapToPage(1);
+        }
+      } else {
+        _wheelSnapToOffset(0.0);
+      }
+    }
+  }
+
+  // About 페이지 스크롤
+  void _handleAboutScroll(double dy, bool isTrackpad) {
+    if (!_aboutScrollController.hasClients) return;
+
+    final max = _aboutScrollController.position.maxScrollExtent;
+    const edge = 8.0;
+    final offset = _aboutScrollController.offset;
+    final isAtTop = offset <= edge;
+    final isAtBottom = offset >= max - edge;
+
+    if (isAtBottom && dy < 0 && _aboutJustArrivedFromProject) {
+      _aboutJustArrivedFromProject = false;
+      _scrollAbout(dy, isTrackpad, max);
+      return;
+    }
+
+    // about -> home
+    if (isAtTop && dy < 0) {
+      if (isTrackpad) {
+        _snapToPage(0);
+      } else {
+        _wheelSnapToOffset(0.0);
+      }
+      return;
+    }
+
+    if (isAtBottom && dy > 0) {
+      if (_isSnappingToProject) return;
+      _isSnappingToProject = true;
+      if (isTrackpad) {
+        _snapToPage(2).then((_) => _isSnappingToProject = false);
+      } else {
+        _wheelSnapToPage(2).then((_) => _isSnappingToProject = false);
+      }
+      return;
+    }
+
+    _scrollAbout(dy, isTrackpad, max);
+  }
+
+  void _scrollAbout(double dy, bool isTrackpad, double max) {
+    if (isTrackpad) {
+      // 애니메이션x
+      final newOffset = (_aboutScrollController.offset + dy * 0.5).clamp(0.0, max);
+      _aboutScrollController.jumpTo(newOffset);
+    } else {
+      final newOffset = (_aboutScrollController.offset + dy * 3.0).clamp(0.0, max);
+      _aboutScrollController.animateTo(
+        newOffset,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  void _onVerticalDragStart(DragStartDetails details) {
+    final page = _pageController.page ?? 0.0;
+    _touchActive = page <= 0.05;
+    _touchConsumed = false;
+  }
+
+  void _onVerticalDragUpdate(DragUpdateDetails details) {
+    if (!_touchActive || _touchConsumed) return;
+    if (!_pageController.hasClients) return;
+
+    final dy = details.delta.dy;
+    if (dy >= 0) return;
 
     final viewport = _pageController.position.viewportDimension;
-    final aboutOffset = viewport * 1.0;
-    const snapEps = 6.0; // 픽셀 단위 스냅 허용치
+    final newOffset = (_pageController.offset - dy * 0.8).clamp(0.0, viewport);
+    _pageController.jumpTo(newOffset);
+  }
 
-    final raw = _pageController.offset + event.scrollDelta.dy;
+  void _onVerticalDragEnd(DragEndDetails details) {
+    if (!_touchActive || _touchConsumed) return;
+    if (!_pageController.hasClients) return;
 
-    final clamped = raw.clamp(0.0, aboutOffset);
+    _touchConsumed = true;
+    _touchActive = false;
 
-    _pageController.jumpTo(clamped);
+    final page = _pageController.page ?? 0.0;
+    final velocity = details.velocity.pixelsPerSecond.dy;
 
-    // 도달
-    if ((aboutOffset - clamped).abs() <= snapEps) {
-      _pageController.jumpToPage(1);
+    if (page > 0.02 || velocity < -100) {
+      _snapToPage(1);
+    } else {
+      _pageController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
     }
   }
 
@@ -102,48 +254,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          NotificationListener<ScrollEndNotification>(
-            onNotification: (_) {
-              final page = _pageController.page ?? 0.0;
-              if (page >= 0.5 && page < 1.0) {
-                _pageController.animateToPage(
-                  1,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOut,
-                );
-              }
-              return false;
-            },
-            child: Listener(
-              onPointerSignal: _onScroll,
-              child: PageView(
-                controller: _pageController,
-                scrollDirection: Axis.horizontal,
-                physics: const NeverScrollableScrollPhysics(),
-                pageSnapping: false,
-                children: [
-                  _buildHero(context),
-                  // About
-                  HomeAboutSection(
-                    pageController: _pageController,
-                    scrollController: _aboutScrollController,
-                    prevPageIndex: 0,
-                    nextPageIndex: 2,
-                  ),
-                  // Project
-                  HomeProjectSection(
-                    pageController: _pageController,
-                    projectScrollController: _projectScrollController,
-                    aboutScrollController: _aboutScrollController,
-                    prevPageIndex: 1, // About
-                  ),
-                ],
+      body: Listener(
+        onPointerSignal: _onPointerSignal,
+        child: GestureDetector(
+          behavior: HitTestBehavior.deferToChild,
+          onVerticalDragStart: _onVerticalDragStart,
+          onVerticalDragUpdate: _onVerticalDragUpdate,
+          onVerticalDragEnd: _onVerticalDragEnd,
+          child: PageView(
+            controller: _pageController,
+            scrollDirection: Axis.horizontal,
+            physics: const NeverScrollableScrollPhysics(),
+            pageSnapping: false,
+            children: [
+              _buildHero(context),
+              HomeAboutSection(
+                pageController: _pageController,
+                scrollController: _aboutScrollController,
+                prevPageIndex: 0,
+                nextPageIndex: 2,
               ),
-            ),
+              HomeProjectSection(
+                pageController: _pageController,
+                projectScrollController: _projectScrollController,
+                aboutScrollController: _aboutScrollController,
+                prevPageIndex: 1,
+                onArrivedAtAboutFromProject: () {
+                  _aboutJustArrivedFromProject = true;
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -158,7 +300,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       height: r.height,
       child: Stack(
         children: [
-          /// 이미지
           FadeTransition(
             opacity: _imageFade,
             child: Transform.translate(
@@ -176,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         topLeft: Radius.circular(isMobile ? 150 : 300),
                       ),
                       child: Image.asset(
-                        AppAssets.hImg,
+                        AppAssets.hImg2,
                         fit: BoxFit.cover,
                         alignment: Alignment.bottomRight,
                       ),
@@ -186,8 +327,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-
-          /// 상단 네비
           Positioned(
             top: 20,
             left: isMobile ? 20 : 60,
@@ -195,32 +334,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Text("Home", style: context.textTheme.bodySmall),
-                    SizedBox(width: isMobile ? 20 : 50),
-                    Text("About", style: context.textTheme.bodySmall),
-                  ],
-                ),
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        _pageController.jumpToPage(
-                          2,
-                        );
-                      },
-                      child: Text("Projects", style: context.textTheme.bodySmall),
-                    ),
-                    SizedBox(width: isMobile ? 20 : 50),
-                    Text("Skills", style: context.textTheme.bodySmall),
-                  ],
-                ),
+                Row(children: [
+                  Text("Home", style: context.textTheme.bodySmall),
+                  SizedBox(width: isMobile ? 20 : 50),
+                  Text("About", style: context.textTheme.bodySmall),
+                ]),
+                Row(children: [
+                  InkWell(
+                    onTap: () => _snapToPage(2),
+                    child: Text("Projects", style: context.textTheme.bodySmall),
+                  ),
+                  SizedBox(width: isMobile ? 20 : 50),
+                  Text("Skills", style: context.textTheme.bodySmall),
+                ]),
               ],
             ),
           ),
-
-          /// 중앙 타이틀
           Center(
             child: Padding(
               padding: EdgeInsets.only(bottom: r.height * 0.3),
@@ -228,22 +357,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 opacity: _titleFade,
                 child: RichText(
                   textAlign: TextAlign.center,
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: "Hi, ",
-                        style: context.textTheme.titleLarge,
-                      ),
-                      TextSpan(
-                        text: "I'm Minsung Kim. ",
-                        style: context.textTheme.titleMedium,
-                      ),
-                      TextSpan(
-                        text: "Web App Frontend Developer.",
-                        style: context.textTheme.titleSmall,
-                      ),
-                    ],
-                  ),
+                  text: TextSpan(children: [
+                    TextSpan(text: "Hi, ", style: context.textTheme.titleLarge),
+                    TextSpan(text: "I'm Minsung Kim. ", style: context.textTheme.titleMedium),
+                    TextSpan(
+                      text: "Web App Frontend Developer.",
+                      style: context.textTheme.titleSmall,
+                    ),
+                  ]),
                 ),
               ),
             ),
