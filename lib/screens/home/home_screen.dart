@@ -4,7 +4,6 @@ import 'package:github_portfolio/common/app_assets.dart';
 import 'package:github_portfolio/common/extensions/context_extensions.dart';
 import 'package:github_portfolio/common/responsive/responsive_scope.dart';
 import 'package:github_portfolio/screens/home/h_views/home_about_section.dart';
-import 'package:github_portfolio/screens/home/h_views/home_project_section.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,16 +22,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   double _pageProgress = 0.0;
 
   final ScrollController _aboutScrollController = ScrollController();
-  final ScrollController _projectScrollController = ScrollController();
-
-  bool _aboutJustArrivedFromProject = false;
 
   // 마우스휠 전용
   bool _wheelSnapping = false;
 
-  // Home -> About 터치전용
-  bool _isSnappingToProject = false;
-  bool _touchActive = false; // home페이지에서 시작한 터치인지 변수
+  // Home => About 터치전용
+  bool _touchActive = false;
   bool _touchConsumed = false;
 
   @override
@@ -65,19 +60,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _imageController.dispose();
     _pageController.dispose();
     _aboutScrollController.dispose();
-    _projectScrollController.dispose();
     super.dispose();
   }
 
   void _onPageChanged() {
     if (!mounted) return;
     final page = _pageController.page ?? 0.0;
-    setState(() => _pageProgress = page.clamp(0.0, 2.0));
+    setState(() => _pageProgress = page.clamp(0.0, 1.0));
   }
 
-  // ──────────────────────────────────────────────────────
-  // 페이지 스냅 (마우스 휠 전용 가드 사용)
-  // ──────────────────────────────────────────────────────
   Future<void> _wheelSnapToPage(int page) async {
     if (_wheelSnapping) return;
     _wheelSnapping = true;
@@ -106,7 +97,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  // 트랙패드/터치 전용
   Future<void> _snapToPage(int page) async {
     await _pageController.animateToPage(
       page,
@@ -115,13 +105,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // 마우스휠 / 트랙패드
   void _onPointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
     if (!_pageController.hasClients) return;
 
     final dy = event.scrollDelta.dy;
-    final isTrackpad = dy.abs() < 50;
+    final isTrackpad = dy.abs() < 180;
     final page = _pageController.page ?? 0.0;
 
     if (page >= 0.99) {
@@ -135,10 +124,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final midOffset = viewport * 0.5;
 
     if (isTrackpad) {
-      final newOffset = (_pageController.offset + dy * 0.5).clamp(0.0, maxOffset);
+      final newOffset = (_pageController.offset + dy * 0.4).clamp(0.0, maxOffset);
       _pageController.jumpTo(newOffset);
-
-      // 끝까지 밀면 About으로!
       if (newOffset >= maxOffset) {
         _snapToPage(1);
       }
@@ -156,7 +143,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  // About 페이지 스크롤
   void _handleAboutScroll(double dy, bool isTrackpad) {
     if (!_aboutScrollController.hasClients) return;
 
@@ -164,13 +150,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     const edge = 8.0;
     final offset = _aboutScrollController.offset;
     final isAtTop = offset <= edge;
-    final isAtBottom = offset >= max - edge;
-
-    if (isAtBottom && dy < 0 && _aboutJustArrivedFromProject) {
-      _aboutJustArrivedFromProject = false;
-      _scrollAbout(dy, isTrackpad, max);
-      return;
-    }
 
     // about -> home
     if (isAtTop && dy < 0) {
@@ -182,24 +161,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       return;
     }
 
-    if (isAtBottom && dy > 0) {
-      if (_isSnappingToProject) return;
-      _isSnappingToProject = true;
-      if (isTrackpad) {
-        _snapToPage(2).then((_) => _isSnappingToProject = false);
-      } else {
-        _wheelSnapToPage(2).then((_) => _isSnappingToProject = false);
-      }
-      return;
-    }
-
     _scrollAbout(dy, isTrackpad, max);
   }
 
   void _scrollAbout(double dy, bool isTrackpad, double max) {
     if (isTrackpad) {
-      // 애니메이션x
-      final newOffset = (_aboutScrollController.offset + dy * 0.5).clamp(0.0, max);
+      final newOffset = (_aboutScrollController.offset + dy * 0.8).clamp(0.0, max);
       _aboutScrollController.jumpTo(newOffset);
     } else {
       final newOffset = (_aboutScrollController.offset + dy * 3.0).clamp(0.0, max);
@@ -272,16 +239,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 pageController: _pageController,
                 scrollController: _aboutScrollController,
                 prevPageIndex: 0,
-                nextPageIndex: 2,
-              ),
-              HomeProjectSection(
-                pageController: _pageController,
-                projectScrollController: _projectScrollController,
-                aboutScrollController: _aboutScrollController,
-                prevPageIndex: 1,
-                onArrivedAtAboutFromProject: () {
-                  _aboutJustArrivedFromProject = true;
-                },
               ),
             ],
           ),
@@ -314,7 +271,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     constraints: BoxConstraints(maxHeight: r.height * 0.5),
                     child: ClipRRect(
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(isMobile ? 150 : 300),
+                        topLeft: Radius.circular((isMobile ? 150 : 300) * (1.0 - _pageProgress)),
+                        topRight: Radius.circular(_pageProgress * 400),
                       ),
                       child: Image.asset(
                         AppAssets.hImg2,
@@ -340,10 +298,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Text("About", style: context.textTheme.bodySmall),
                 ]),
                 Row(children: [
-                  InkWell(
-                    onTap: () => _snapToPage(2),
-                    child: Text("Projects", style: context.textTheme.bodySmall),
-                  ),
+                  Text("Projects", style: context.textTheme.bodySmall),
                   SizedBox(width: isMobile ? 20 : 50),
                   Text("Skills", style: context.textTheme.bodySmall),
                 ]),

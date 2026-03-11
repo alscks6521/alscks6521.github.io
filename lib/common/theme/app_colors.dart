@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   static const Color mainColor = Color(0xFF00B1FF);
   static const Color subColor = Color(0xFF468FEA);
-  static const Color black = Color(0xFF32383D);
+  static const Color black = Color.fromARGB(255, 30, 34, 36);
   static const Color glay80 = Color(0xFF4B535C);
   static const Color glay60 = Color(0xFF697582);
   static const Color glay40 = Color(0xFF939BA6);
