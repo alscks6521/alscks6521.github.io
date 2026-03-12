@@ -3,7 +3,6 @@ import 'package:github_portfolio/common/app_assets.dart';
 import 'package:github_portfolio/common/extensions/context_extensions.dart';
 import 'package:github_portfolio/common/responsive/responsive_scope.dart';
 
-// 데이터 모델
 class ProjectItem {
   final String title;
   final String subtitle;
@@ -20,10 +19,11 @@ class ProjectItem {
   });
 }
 
-final projects = [
-  const ProjectItem(
+const List<ProjectItem> projects = [
+  ProjectItem(
     title: '언어 치료 관리 모바일 애플리케이션',
-    subtitle: 'ISay App은 언어 치료가 필요한 아동과 보호자, 그리고 치료사를 연결하여 치료 일정 관리와 상담을 지원하는 모바일 애플리케이션입니다.\n\n'
+    subtitle:
+        'ISay App은 언어 치료가 필요한 아동과 보호자, 그리고 치료사를 연결하여 치료 일정 관리와 상담을 지원하는 모바일 애플리케이션입니다.\n\n'
         '프로젝트에서는 Flutter 기반 모바일 애플리케이션 개발을 전체적으로 담당했습니다.',
     useSkill: [
       'Flutter',
@@ -37,7 +37,7 @@ final projects = [
     imagePath: AppAssets.sImg1,
     contentImagePath: AppAssets.scImg1,
   ),
-  const ProjectItem(
+  ProjectItem(
     title: '언어 치료 관리 웹 플랫폼',
     subtitle:
         'ISay Web은 언어 치료 서비스 이용자와 치료사를 위한 관리 플랫폼으로, 치료 일정 관리, 상담 기능, 사용자 관리 기능 등을 제공하는 웹 서비스입니다.\n\n'
@@ -52,7 +52,7 @@ final projects = [
     imagePath: AppAssets.sImg2,
     contentImagePath: AppAssets.scImg2,
   ),
-  const ProjectItem(
+  ProjectItem(
     title: 'Project Gamma',
     subtitle: 'Flutter · Firebase',
     useSkill: [
@@ -60,12 +60,12 @@ final projects = [
       'Dio',
       'Firebase Cloud Messaging',
       'JavaScript PortOne API SDK',
-      'WebSocket'
+      'WebSocket',
     ],
     imagePath: AppAssets.sImg3,
     contentImagePath: AppAssets.scImg1,
   ),
-  const ProjectItem(
+  ProjectItem(
     title: 'Project Delta',
     subtitle: 'Flutter · BLE',
     useSkill: [
@@ -73,12 +73,12 @@ final projects = [
       'Dio',
       'Firebase Cloud Messaging',
       'JavaScript PortOne API SDK',
-      'WebSocket'
+      'WebSocket',
     ],
     imagePath: AppAssets.sImg4,
     contentImagePath: AppAssets.scImg1,
   ),
-  const ProjectItem(
+  ProjectItem(
     title: 'Project Epsilon',
     subtitle: 'Flutter · WebRTC',
     useSkill: [
@@ -86,7 +86,7 @@ final projects = [
       'Dio',
       'Firebase Cloud Messaging',
       'JavaScript PortOne API SDK',
-      'WebSocket'
+      'WebSocket',
     ],
     imagePath: AppAssets.sImg5,
     contentImagePath: AppAssets.scImg2,
@@ -95,7 +95,7 @@ final projects = [
 
 class HomeProjectSection extends StatefulWidget {
   final double scrollOffset;
-  final double sectionStartOffset; // 카드 애니메이션 트리거 기준점
+  final double sectionStartOffset;
 
   const HomeProjectSection({
     super.key,
@@ -108,32 +108,35 @@ class HomeProjectSection extends StatefulWidget {
 }
 
 class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProviderStateMixin {
+  static const double _rowTriggerInterval = 140.0;
+  static const int _projectCount = 5;
+
   late final List<AnimationController> _cardControllers;
   late final List<Animation<double>> _fadeAnims;
   late final List<Animation<Offset>> _slideAnims;
-
-  static const double _rowTriggerInterval = 140.0;
 
   @override
   void initState() {
     super.initState();
     _cardControllers = List.generate(
-      projects.length,
+      _projectCount,
       (_) => AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 500),
         reverseDuration: const Duration(milliseconds: 300),
       ),
     );
-    _fadeAnims = _cardControllers
-        .map((c) => CurvedAnimation(parent: c, curve: Curves.easeOut) as Animation<double>)
-        .toList();
-    _slideAnims = _cardControllers
-        .map((c) => Tween<Offset>(
-              begin: const Offset(0, 0.1),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: c, curve: Curves.easeOutCubic)))
-        .toList();
+    _fadeAnims = List.generate(
+      _projectCount,
+      (i) => CurvedAnimation(parent: _cardControllers[i], curve: Curves.easeOut),
+    );
+    _slideAnims = List.generate(
+      _projectCount,
+      (i) => Tween<Offset>(
+        begin: const Offset(0, 0.1),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: _cardControllers[i], curve: Curves.easeOutCubic)),
+    );
   }
 
   @override
@@ -147,27 +150,36 @@ class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProv
   @override
   void didUpdateWidget(HomeProjectSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _checkTriggers();
+    if (oldWidget.scrollOffset != widget.scrollOffset) {
+      _checkTriggers();
+    }
   }
 
   void _checkTriggers() {
-    for (int i = 0; i < projects.length; i++) {
+    for (int i = 0; i < _projectCount; i++) {
       final triggerAt = widget.sectionStartOffset + i * _rowTriggerInterval;
+      final ctrl = _cardControllers[i];
 
-      // 등장 트기러 기준
-      if (widget.scrollOffset >= triggerAt &&
-          !_cardControllers[i].isCompleted &&
-          !_cardControllers[i].isAnimating) {
-        _cardControllers[i].forward();
-      }
-
-      // 퇴장 트리거
-      if (widget.scrollOffset < triggerAt &&
-          _cardControllers[i].value > 0 &&
-          !_cardControllers[i].isAnimating) {
-        _cardControllers[i].reverse();
+      if (widget.scrollOffset >= triggerAt) {
+        if (!ctrl.isCompleted && !ctrl.isAnimating) ctrl.forward();
+      } else {
+        if (ctrl.value > 0 && !ctrl.isAnimating) ctrl.reverse();
       }
     }
+  }
+
+  // 오버레이 뜨우기
+  void _openDetail(BuildContext context, int index) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: false,
+        transitionDuration: const Duration(milliseconds: 420),
+        reverseTransitionDuration: const Duration(milliseconds: 320),
+        pageBuilder: (_, animation, __) =>
+            _ProjectDetailOverlay(project: projects[index], index: index, animation: animation),
+      ),
+    );
   }
 
   @override
@@ -179,9 +191,7 @@ class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProv
     final double hPad = isMobile ? 20.0 : 40.0;
     final double gap = isMobile ? 12.0 : 20.0;
 
-    // 카드 높이: 너비에 비례 계산
-    final double availW = r.width - hPad * 2 - gap * (crossCount - 1);
-    final double cardW = availW / crossCount;
+    final double cardW = (r.width - hPad * 2 - gap * (crossCount - 1)) / crossCount;
     final double cardH = cardW * 1.4;
 
     return Padding(
@@ -192,7 +202,7 @@ class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProv
           Wrap(
             spacing: gap,
             runSpacing: gap,
-            children: List.generate(projects.length, (i) {
+            children: List.generate(_projectCount, (i) {
               return FadeTransition(
                 opacity: _fadeAnims[i],
                 child: SlideTransition(
@@ -204,6 +214,7 @@ class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProv
                       project: projects[i],
                       index: i,
                       isMobile: isMobile,
+                      onTap: () => _openDetail(context, i),
                     ),
                   ),
                 ),
@@ -217,33 +228,156 @@ class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProv
   }
 }
 
-// 카드
-class _ProjectCard extends StatelessWidget {
+// ─────────────────────────────────────────────
+// _ProjectCard  (호버 효과 추가)
+// ─────────────────────────────────────────────
+class _ProjectCard extends StatefulWidget {
   final ProjectItem project;
   final int index;
   final bool isMobile;
+  final VoidCallback onTap;
 
   const _ProjectCard({
     required this.project,
     required this.index,
     required this.isMobile,
+    required this.onTap,
+  });
+
+  @override
+  State<_ProjectCard> createState() => _ProjectCardState();
+}
+
+class _ProjectCardState extends State<_ProjectCard> with SingleTickerProviderStateMixin {
+  late final AnimationController _hoverCtrl;
+  late final Animation<double> _scaleAnim;
+  late final Animation<double> _glowAnim;
+  late final Animation<Color?> _borderColorAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _hoverCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
+
+    _scaleAnim = Tween<double>(
+      begin: 1.0,
+      end: 1.035,
+    ).animate(CurvedAnimation(parent: _hoverCtrl, curve: Curves.easeOutCubic));
+    _glowAnim = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _hoverCtrl, curve: Curves.easeOut));
+    _borderColorAnim = ColorTween(
+      begin: const Color(0x1AFFFFFF),
+      end: const Color(0x66FFFFFF),
+    ).animate(CurvedAnimation(parent: _hoverCtrl, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _hoverCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onEnter(_) {
+    _hoverCtrl.forward();
+  }
+
+  void _onExit(_) {
+    _hoverCtrl.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: _onEnter,
+      onExit: _onExit,
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedBuilder(
+          animation: _hoverCtrl,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnim.value,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0x01000000),
+                  border: Border.all(
+                    color: _borderColorAnim.value ?? const Color(0x1AFFFFFF),
+                    width: 1.0 + _glowAnim.value * 0.5,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.06 * _glowAnim.value),
+                      blurRadius: 24 * _glowAnim.value,
+                      spreadRadius: 2 * _glowAnim.value,
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3 * _glowAnim.value),
+                      blurRadius: 20 * _glowAnim.value,
+                      offset: Offset(0, 8 * _glowAnim.value),
+                    ),
+                  ],
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: child,
+              ),
+            );
+          },
+          child: _CardContent(
+            project: widget.project,
+            index: widget.index,
+            isMobile: widget.isMobile,
+            hoverAnim: _glowAnim,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// _CardContent  (이미지 오버레이 shimmer 포함)
+// ─────────────────────────────────────────────
+class _CardContent extends StatelessWidget {
+  final ProjectItem project;
+  final int index;
+  final bool isMobile;
+  final Animation<double> hoverAnim;
+
+  static const _badgeBgColor = Color(0x1AFFFFFF);
+  static const _skillBorderColor = Color(0x33FFFFFF);
+
+  const _CardContent({
+    required this.project,
+    required this.index,
+    required this.isMobile,
+    required this.hoverAnim,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 이미지
-          Expanded(
-            flex: 5,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── 이미지 영역 ─────────────────────────
+        Expanded(
+          flex: 5,
+          child: AnimatedBuilder(
+            animation: hoverAnim,
+            builder: (_, child) => Stack(
+              fit: StackFit.expand,
+              children: [
+                child!,
+
+                Positioned.fill(
+                  child: Container(color: Colors.white.withOpacity(0.06 * hoverAnim.value)),
+                ),
+              ],
+            ),
             child: SizedBox(
               width: double.infinity,
               child: Image.asset(
@@ -253,89 +387,357 @@ class _ProjectCard extends StatelessWidget {
               ),
             ),
           ),
+        ),
 
-          // 텍스트
-          Expanded(
-            flex: 6,
-            child: Padding(
-              padding: EdgeInsets.all(isMobile ? 12 : 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 번호 뱃지
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '0${index + 1}',
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: Colors.white60,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                        fontSize: 10,
-                      ),
+        Expanded(
+          flex: 6,
+          child: Padding(
+            padding: EdgeInsets.all(isMobile ? 12 : 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _badgeBgColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '0${index + 1}',
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: Colors.white60,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      fontSize: 10,
                     ),
                   ),
-                  const SizedBox(height: 8),
-
-                  // 제목
-                  Text(
-                    project.title,
-                    maxLines: 2,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  project.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.headlineLarge?.copyWith(
+                    color: Colors.white,
+                    fontSize: isMobile ? 13 : 15,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Expanded(
+                  child: Text(
+                    project.subtitle,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: context.textTheme.headlineLarge?.copyWith(
-                      color: Colors.white,
-                      fontSize: isMobile ? 13 : 15,
-                      height: 1.4,
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: Colors.white54,
+                      fontSize: isMobile ? 11 : 12,
+                      height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 5,
+                  runSpacing: 5,
+                  children: project.useSkill
+                      .take(2)
+                      .map(
+                        (skill) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: _skillBorderColor),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            skill,
+                            style: context.textTheme.bodySmall?.copyWith(
+                              color: Colors.white70,
+                              fontSize: isMobile ? 10 : 11,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-                  // 설명
-                  Expanded(
-                    child: Text(
-                      project.subtitle,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white54,
-                        fontSize: isMobile ? 11 : 12,
-                        height: 1.5,
+class _ProjectDetailOverlay extends StatefulWidget {
+  final ProjectItem project;
+  final int index;
+  final Animation<double> animation;
+
+  const _ProjectDetailOverlay({
+    required this.project,
+    required this.index,
+    required this.animation,
+  });
+
+  @override
+  State<_ProjectDetailOverlay> createState() => _ProjectDetailOverlayState();
+}
+
+class _ProjectDetailOverlayState extends State<_ProjectDetailOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _innerCtrl;
+  late final Animation<double> _contentFade;
+  late final Animation<Offset> _contentSlide;
+
+  @override
+  void initState() {
+    super.initState();
+    _innerCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 380));
+
+    _contentFade = CurvedAnimation(
+      parent: _innerCtrl,
+      curve: const Interval(0.35, 1.0, curve: Curves.easeOut),
+    );
+    _contentSlide = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero).animate(
+      CurvedAnimation(
+        parent: _innerCtrl,
+        curve: const Interval(0.35, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // 배경 애니메이션이 시작되면 내부 콘텐츠 연출
+    widget.animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _innerCtrl.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _innerCtrl.dispose();
+    super.dispose();
+  }
+
+  void _close() {
+    _innerCtrl.reverse().then((_) => Navigator.of(context).pop());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bgScale = Tween<double>(
+      begin: 0.92,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: widget.animation, curve: Curves.easeOutCubic));
+    final bgFade = CurvedAnimation(parent: widget.animation, curve: Curves.easeOut);
+
+    return AnimatedBuilder(
+      animation: widget.animation,
+      builder: (context, _) {
+        return FadeTransition(
+          opacity: bgFade,
+          child: ScaleTransition(
+            scale: bgScale,
+            child: Scaffold(
+              backgroundColor: const Color(0xFF0A0A0F),
+              body: Stack(
+                children: [
+                  // 배경 이미지 흐림
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.18,
+                      child: Image.asset(widget.project.contentImagePath, fit: BoxFit.cover),
+                    ),
+                  ),
+
+                  Positioned.fill(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0x99000000), Color(0xDD0A0A0F)],
+                          stops: [0.0, 0.55],
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
 
-                  // 스킬 태그
-                  Wrap(
-                    spacing: 5,
-                    runSpacing: 5,
-                    children: project.useSkill
-                        .take(2)
-                        .map((skill) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                skill,
-                                style: context.textTheme.bodySmall?.copyWith(
-                                  color: Colors.white70,
-                                  fontSize: isMobile ? 10 : 11,
+                  // 콘텐츠
+                  FadeTransition(
+                    opacity: _contentFade,
+                    child: SlideTransition(
+                      position: _contentSlide,
+                      child: SafeArea(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(32, 64, 32, 48),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 프로젝트 번호
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0x1AFFFFFF),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: const Color(0x33FFFFFF)),
+                                ),
+                                child: Text(
+                                  '0${widget.index + 1}',
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    letterSpacing: 2,
+                                  ),
                                 ),
                               ),
-                            ))
-                        .toList(),
+
+                              const SizedBox(height: 20),
+
+                              // 타이틀
+                              Text(
+                                widget.project.title,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.3,
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // 프로젝트 이미지
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.asset(
+                                  widget.project.contentImagePath,
+                                  width: double.infinity,
+                                  height: 240,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+
+                              const SizedBox(height: 32),
+
+                              // 설명
+                              Text(
+                                widget.project.subtitle,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 15,
+                                  height: 1.8,
+                                ),
+                              ),
+
+                              const SizedBox(height: 32),
+
+                              // 구분선
+                              const Divider(color: Color(0x22FFFFFF), thickness: 1),
+
+                              const SizedBox(height: 24),
+
+                              // 스킬 섹션
+                              const Text(
+                                'Tech Stack',
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: widget.project.useSkill
+                                    .map(
+                                      (skill) => Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 7,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: const Color(0x44FFFFFF)),
+                                          borderRadius: BorderRadius.circular(24),
+                                          color: const Color(0x0DFFFFFF),
+                                        ),
+                                        child: Text(
+                                          skill,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // 닫기 버튼
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 16,
+                    right: 16,
+                    child: FadeTransition(
+                      opacity: bgFade,
+                      child: _CloseButton(onTap: _close),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-        ],
+        );
+      },
+    );
+  }
+}
+
+class _CloseButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _CloseButton({required this.onTap});
+
+  @override
+  State<_CloseButton> createState() => _CloseButtonState();
+}
+
+class _CloseButtonState extends State<_CloseButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: _hovered ? const Color(0x33FFFFFF) : const Color(0x1AFFFFFF),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: _hovered ? const Color(0x66FFFFFF) : const Color(0x33FFFFFF)),
+          ),
+          child: Icon(
+            Icons.close_rounded,
+            color: _hovered ? Colors.white : Colors.white70,
+            size: 20,
+          ),
+        ),
       ),
     );
   }

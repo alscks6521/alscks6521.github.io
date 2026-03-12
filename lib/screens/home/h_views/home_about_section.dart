@@ -7,7 +7,26 @@ import 'package:github_portfolio/common/responsive/responsive_scope.dart';
 import 'package:github_portfolio/common/theme/app_colors.dart';
 import 'package:github_portfolio/screens/home/h_views/home_project_section.dart';
 
+double _calcProgress(double offset, double start, double end) {
+  return ((offset - start) / (end - start)).clamp(0.0, 1.0);
+}
+
+const _shadowDecoration = BoxDecoration(
+  borderRadius: BorderRadius.all(Radius.circular(12)),
+  boxShadow: [
+    BoxShadow(
+      color: Color(0x0D000000),
+      blurRadius: 20,
+      offset: Offset(1, 3),
+      spreadRadius: 5,
+    ),
+  ],
+);
+
 class HomeAboutSection extends StatefulWidget {
+  static const double aboutHDesktop = 3800.0;
+  static const double aboutHMobile = 2000.0;
+
   final PageController pageController;
   final ScrollController scrollController;
   final int prevPageIndex;
@@ -24,8 +43,8 @@ class HomeAboutSection extends StatefulWidget {
 }
 
 class _HomeAboutSectionState extends State<HomeAboutSection>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  final _introTexts = [
+    with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
+  static const _introTexts = [
     '안녕하세요. 웹·앱 개발자 김민성입니다.\n'
         'Flutter를 중심으로 웹과 모바일 서비스를 개발하고 있습니다.',
     '스타트업에서 앱의 설계부터 개발, 배포까지 전 과정을 담당하며\n'
@@ -35,24 +54,31 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
         '방문해주셔서 감사합니다.',
   ];
 
+  static const double _factor1 = 0.55;
+  static const double _factor2 = 0.65;
+  static const double _factor3 = 0.75;
+  static const double _touchThreshold = 60.0;
+  static const double _projectSectionH = 1800.0;
+
+  static const _cardShadow = BoxShadow(
+    color: Color(0x0D000000),
+    blurRadius: 10,
+    offset: Offset(1, 3),
+    spreadRadius: 5,
+  );
+
   double _pageProgress = 0.0;
   double _scrollOffset = 0.0;
   double _parallaxOffset = 0.0;
   late final Ticker _ticker;
-
-  static const double _factor1 = 0.55;
-  static const double _factor2 = 0.65;
-  static const double _factor3 = 0.75;
+  late final AnimationController _helloMarqueeController;
 
   double? _touchStartY;
   double _touchStartScrollOffset = 0.0;
   bool _isPageAnimating = false;
-  static const double _touchThreshold = 60.0;
 
-  // 스크롤 섹션 높이
-  static const double _aboutHDesktop = 4000.0;
-  static const double _aboutHMobile = 2000.0;
-  static const double _projectSectionH = 1800.0;
+  double? _cachedTextWidth;
+  TextStyle? _cachedTextStyle;
 
   @override
   bool get wantKeepAlive => true;
@@ -63,6 +89,10 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
     widget.pageController.addListener(_onPageChanged);
     widget.scrollController.addListener(_onScrollOffsetChanged);
     _ticker = createTicker(_onTick)..start();
+    _helloMarqueeController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 12),
+    )..repeat();
   }
 
   @override
@@ -70,6 +100,7 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
     widget.pageController.removeListener(_onPageChanged);
     widget.scrollController.removeListener(_onScrollOffsetChanged);
     _ticker.dispose();
+    _helloMarqueeController.dispose();
     super.dispose();
   }
 
@@ -137,12 +168,23 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
     _touchStartY = null;
   }
 
-  double _calcProgress(double offset, double start, double end) {
-    return ((offset - start) / (end - start)).clamp(0.0, 1.0);
-  }
-
   double _parallaxTop(double baseY, double factor) {
     return baseY - _parallaxOffset * factor;
+  }
+
+  double _measureTextWidth(String text, TextStyle style) {
+    if (_cachedTextStyle == style && _cachedTextWidth != null) {
+      return _cachedTextWidth!;
+    }
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+    _cachedTextStyle = style;
+    _cachedTextWidth = painter.width;
+    painter.dispose();
+    return _cachedTextWidth!;
   }
 
   @override
@@ -153,24 +195,19 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
     final isMobile = r.isMobile;
     final isDesktop = r.isDesktop;
 
-    // ── 텍스트 블록별 등장 트리거 구간 ──
     final List<double> textTriggers = isDesktop ? [0, 900, 1800] : [0, 400, 700];
 
-    double blockOpacity(int index) {
-      final start = textTriggers[index];
-      final end = start + 300.0;
-      return _calcProgress(_scrollOffset, start, end);
-    }
+    double blockVisible(int index) => _scrollOffset >= textTriggers[index] ? 1.0 : 0.0;
 
-    final double aboutH = isDesktop ? _aboutHDesktop : _aboutHMobile;
+    final double aboutH =
+        isDesktop ? HomeAboutSection.aboutHDesktop : HomeAboutSection.aboutHMobile;
     final double totalH = aboutH + _projectSectionH;
 
     final double pageArrival = _pageProgress.clamp(0.0, 1.0);
-    final double offsetY = (1.0 - pageArrival) * 60.0;
-    final double pageOpacity = pageArrival.clamp(0.0, 1.0);
+    final double offsetY = (1.0 - pageArrival) * 100.0;
+    final double pageOpacity = pageArrival;
     final double introOffsetX = (1.0 - pageArrival) * 80.0;
 
-    // 이미지 퇴장
     final double imgExitStart = isDesktop ? 2400.0 : 1100.0;
     final double imgExitEnd = isDesktop ? 3200.0 : 1700.0;
     final double imgExitProgress = _calcProgress(_scrollOffset, imgExitStart, imgExitEnd);
@@ -178,21 +215,23 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
     final double imgExitOpacity =
         imgExitProgress < 0.4 ? 1.0 : 1.0 - ((imgExitProgress - 0.4) / 0.6);
 
-    // About 타이틀 퇴장
-    final double titleExitStart = isDesktop ? 2200.0 : 1000.0;
-    final double titleExitEnd = isDesktop ? 2800.0 : 1400.0;
+    final double textExitStart = isDesktop ? 2200.0 : 900.0;
+    final double textExitEnd = isDesktop ? 2600.0 : 1140.0;
+    final double textExitOpacity = 1.0 - _calcProgress(_scrollOffset, textExitStart, textExitEnd);
+
+    final double titleExitStart = isDesktop ? 200.0 : 1000.0;
+    final double titleExitEnd = isDesktop ? 2400.0 : 1400.0;
     final double titleExitProgress = _calcProgress(_scrollOffset, titleExitStart, titleExitEnd);
-    final double titleExitOffsetY = -titleExitProgress * 120.0;
+    final double titleExitOffsetY = -titleExitProgress * 10.0;
     final double titleExitOpacity =
         titleExitProgress < 0.4 ? 1.0 : 1.0 - ((titleExitProgress - 0.4) / 0.6);
     final double titleOpacity = (pageOpacity * titleExitOpacity).clamp(0.0, 1.0);
 
-    // 이미지 y값
     final double img1BaseY = isDesktop ? 600 : 400;
     final double img2BaseY = isDesktop ? 1200 : 800;
-    final double img3BaseY = isDesktop ? 2200 : 1200;
+    final double img3BaseY = isDesktop ? 1800 : 1100;
+    final double helloY = isDesktop ? 3550 : 1880;
 
-    // Project 카드 트리거 시작점
     final double projectTriggerStart = aboutH - (isMobile ? 500 : 1000);
     final Color bgColor = Color.lerp(
       Colors.white,
@@ -200,13 +239,15 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
       _calcProgress(_scrollOffset, projectTriggerStart, projectTriggerStart + 10),
     )!;
 
+    final double textGroupOpacity = (pageOpacity * textExitOpacity).clamp(0.0, 1.0);
+    final double imageOpacity = (pageOpacity * imgExitOpacity).clamp(0.0, 1.0);
+
     return Listener(
       onPointerDown: _onPointerDown,
       onPointerMove: _onPointerMove,
       onPointerUp: _onPointerUp,
       child: Stack(
         children: [
-          // 배경
           Positioned.fill(
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 900),
@@ -214,7 +255,6 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
               color: bgColor,
             ),
           ),
-          // 전체 스크롤 영역
           SingleChildScrollView(
             controller: widget.scrollController,
             physics: const NeverScrollableScrollPhysics(),
@@ -223,9 +263,64 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
               height: totalH,
               child: Stack(
                 children: [
-                  // Project 섹션
                   Positioned(
-                    top: aboutH + 0,
+                    top: helloY,
+                    left: 0,
+                    right: 0,
+                    child: SizedBox(
+                      height: isMobile ? 100 : 200,
+                      child: ClipRect(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final textStyle = context.textTheme.displayLarge?.copyWith(
+                              color: Colors.black,
+                              fontSize: isMobile ? 100 : 180,
+                              height: 1.0,
+                            );
+
+                            if (textStyle == null) return const SizedBox.shrink();
+
+                            const itemText = 'Hello, World!';
+                            final gap = isMobile ? 32.0 : 80.0;
+                            final textWidth = _measureTextWidth(itemText, textStyle);
+                            final itemWidth = textWidth + gap;
+                            final repeatCount = ((constraints.maxWidth / itemWidth).ceil()) + 3;
+
+                            return AnimatedBuilder(
+                              animation: _helloMarqueeController,
+                              builder: (context, _) {
+                                return Transform.translate(
+                                  offset: Offset(-itemWidth * _helloMarqueeController.value, 0),
+                                  child: OverflowBox(
+                                    maxWidth: double.infinity,
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: List.generate(
+                                        repeatCount,
+                                        (_) => Padding(
+                                          padding: EdgeInsets.only(right: gap),
+                                          child: Text(
+                                            itemText,
+                                            maxLines: 1,
+                                            softWrap: false,
+                                            overflow: TextOverflow.visible,
+                                            style: textStyle,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: aboutH,
                     left: 0,
                     right: 0,
                     child: HomeProjectSection(
@@ -237,59 +332,42 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
               ),
             ),
           ),
-
-          // 패럴랙스 이미지 1
           Positioned(
             top: _parallaxTop(img1BaseY, _factor1) + imgExitOffsetY,
             left: isMobile ? null : r.width * 0.09,
             right: isMobile ? 24 : null,
             child: Opacity(
-              opacity: (pageOpacity * imgExitOpacity).clamp(0.0, 1.0),
-              child: _shadowImage(
+              opacity: imageOpacity,
+              child: _ShadowImage(
                 assetPath: AppAssets.aboutImg1,
                 width: isMobile ? 140 : r.width * 0.2,
               ),
             ),
           ),
-
-          // 이미지 2
-          if (isMobile)
-            Positioned(
-              top: _parallaxTop(img2BaseY, _factor2) + imgExitOffsetY,
-              left: 20,
-              child: Opacity(
-                opacity: (pageOpacity * imgExitOpacity).clamp(0.0, 1.0),
-                child: _shadowImage(assetPath: AppAssets.aboutImg2, width: 140),
-              ),
-            )
-          else
-            Positioned(
-              top: _parallaxTop(img2BaseY, _factor2) + imgExitOffsetY,
-              right: r.width * 0.1,
-              child: Opacity(
-                opacity: (pageOpacity * imgExitOpacity).clamp(0.0, 1.0),
-                child: _shadowImage(
-                  assetPath: AppAssets.aboutImg2,
-                  width: r.width * 0.2,
-                ),
+          Positioned(
+            top: _parallaxTop(img2BaseY, _factor2) + imgExitOffsetY,
+            left: isMobile ? 20 : null,
+            right: isMobile ? null : r.width * 0.1,
+            child: Opacity(
+              opacity: imageOpacity,
+              child: _ShadowImage(
+                assetPath: AppAssets.aboutImg2,
+                width: isMobile ? 140 : r.width * 0.2,
               ),
             ),
-
-          // 이미지 3
+          ),
           Positioned(
             top: _parallaxTop(img3BaseY, _factor3) + imgExitOffsetY,
             left: isMobile ? null : r.width * 0.14,
             right: isMobile ? 24 : null,
             child: Opacity(
-              opacity: (pageOpacity * imgExitOpacity).clamp(0.0, 1.0),
-              child: _shadowImage(
+              opacity: imageOpacity,
+              child: _ShadowImage(
                 assetPath: AppAssets.aboutImg3,
                 width: isMobile ? 130 : r.width * 0.2,
               ),
             ),
           ),
-
-          // About 타이틀
           Positioned(
             top: isMobile ? 16 : 70,
             left: isMobile ? 20 : 80,
@@ -304,8 +382,6 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
               ),
             ),
           ),
-
-          // 소개 텍스트 카드
           Positioned(
             top: isMobile ? r.height * 0.16 : 120,
             left: isMobile ? 24 : 10,
@@ -318,46 +394,34 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: List.generate(_introTexts.length, (i) {
-                      // 등장
-                      final appearOpacity = (blockOpacity(i) * pageOpacity).clamp(0.0, 1.0);
-                      final slideY = (1.0 - blockOpacity(i)) * 24.0;
-
-                      // 퇴장
-                      final combinedOpacity = (appearOpacity * imgExitOpacity).clamp(0.0, 1.0);
-                      final combinedOffsetY = slideY + imgExitOffsetY;
-
-                      return Transform.translate(
-                        offset: Offset(0, combinedOffsetY),
-                        child: Opacity(
-                          opacity: combinedOpacity,
+                      final visible = blockVisible(i);
+                      return AnimatedOpacity(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOut,
+                        opacity: (visible * textGroupOpacity).clamp(0.0, 1.0),
+                        child: AnimatedSlide(
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeOut,
+                          offset: visible == 1.0 ? Offset.zero : const Offset(0, 0.04),
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 24),
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                   horizontal: isMobile ? 40 : 80, vertical: 14),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: const Color(0xE6FFFFFF),
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(1, 3),
-                                    spreadRadius: 5,
-                                  ),
-                                ],
+                                boxShadow: const [_cardShadow],
                               ),
                               child: Text(
                                 _introTexts[i],
                                 style: isMobile
                                     ? context.textTheme.bodyMedium
-                                    : isDesktop
-                                        ? context.textTheme.titleMedium?.copyWith(
-                                            height: 1.8,
-                                            letterSpacing: 0.2,
-                                            fontSize: 20,
-                                          )
-                                        : context.textTheme.bodyLarge,
+                                    : context.textTheme.titleMedium?.copyWith(
+                                        height: 1.8,
+                                        letterSpacing: 0.2,
+                                        fontSize: 16,
+                                      ),
                                 textAlign: TextAlign.left,
                               ),
                             ),
@@ -370,8 +434,6 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
               ),
             ),
           ),
-
-          // Project 툴바
           if (_scrollOffset >= projectTriggerStart)
             Positioned(
               top: 0,
@@ -399,23 +461,21 @@ class _HomeAboutSectionState extends State<HomeAboutSection>
       ),
     );
   }
+}
 
-  Widget _shadowImage({required String assetPath, required double width}) {
+class _ShadowImage extends StatelessWidget {
+  final String assetPath;
+  final double width;
+
+  const _ShadowImage({required this.assetPath, required this.width});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: width,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(1, 3),
-            spreadRadius: 5,
-          ),
-        ],
-      ),
+      decoration: _shadowDecoration,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Image.asset(assetPath, width: width, fit: BoxFit.cover),
       ),
     );

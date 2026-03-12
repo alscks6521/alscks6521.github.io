@@ -17,18 +17,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final AnimationController _imageController;
   late final Animation<double> _titleFade;
   late final Animation<double> _imageFade;
-
   late final PageController _pageController;
-  double _pageProgress = 0.0;
-
   final ScrollController _aboutScrollController = ScrollController();
 
-  // 마우스휠 전용
+  double _pageProgress = 0.0;
   bool _wheelSnapping = false;
-
-  // Home => About 터치전용
   bool _touchActive = false;
   bool _touchConsumed = false;
+
+  static const double _trackpadDyThreshold = 40.0;
 
   @override
   void initState() {
@@ -100,9 +97,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _snapToPage(int page) async {
     await _pageController.animateToPage(
       page,
-      duration: const Duration(milliseconds: 480),
+      duration: const Duration(milliseconds: 1000),
       curve: Curves.easeOutCubic,
     );
+  }
+
+  bool _isLikelyTrackpad(PointerScrollEvent event) {
+    final dy = event.scrollDelta.dy.abs();
+    final dx = event.scrollDelta.dx.abs();
+    return dx > 0 || (dy > 0 && dy < _trackpadDyThreshold);
   }
 
   void _onPointerSignal(PointerSignalEvent event) {
@@ -110,33 +113,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (!_pageController.hasClients) return;
 
     final dy = event.scrollDelta.dy;
-    final isTrackpad = dy.abs() < 180;
     final page = _pageController.page ?? 0.0;
 
     if (page >= 0.99) {
-      _handleAboutScroll(dy, isTrackpad);
+      _handleAboutScroll(dy, _isLikelyTrackpad(event));
       return;
     }
 
-    // Home 페이지
-    final viewport = _pageController.position.viewportDimension;
-    final maxOffset = viewport;
-    final midOffset = viewport * 0.5;
+    if (_wheelSnapping) return;
 
-    if (isTrackpad) {
-      final newOffset = (_pageController.offset + dy * 0.4).clamp(0.0, maxOffset);
-      _pageController.jumpTo(newOffset);
-      if (newOffset >= maxOffset) {
-        _snapToPage(1);
+    final viewport = _pageController.position.viewportDimension;
+    final midOffset = viewport * 0.5;
+    final currentOffset = _pageController.offset;
+    const tolerance = 8.0;
+
+    if (dy > 0) {
+      if (currentOffset < midOffset - tolerance) {
+        _wheelSnapToOffset(midOffset);
+      } else {
+        _wheelSnapToPage(1);
       }
-    } else {
-      if (_wheelSnapping) return;
-      if (dy > 0) {
-        if (page < 0.5) {
-          _wheelSnapToOffset(midOffset);
-        } else {
-          _wheelSnapToPage(1);
-        }
+    } else if (dy < 0) {
+      if (currentOffset > midOffset + tolerance) {
+        _wheelSnapToOffset(midOffset);
       } else {
         _wheelSnapToOffset(0.0);
       }
@@ -148,11 +147,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     final max = _aboutScrollController.position.maxScrollExtent;
     const edge = 8.0;
-    final offset = _aboutScrollController.offset;
-    final isAtTop = offset <= edge;
 
-    // about -> home
-    if (isAtTop && dy < 0) {
+    if (_aboutScrollController.offset <= edge && dy < 0) {
       if (isTrackpad) {
         _snapToPage(0);
       } else {
@@ -161,10 +157,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       return;
     }
 
-    _scrollAbout(dy, isTrackpad, max);
-  }
-
-  void _scrollAbout(double dy, bool isTrackpad, double max) {
     if (isTrackpad) {
       final newOffset = (_aboutScrollController.offset + dy * 0.8).clamp(0.0, max);
       _aboutScrollController.jumpTo(newOffset);
@@ -173,6 +165,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _aboutScrollController.animateTo(
         newOffset,
         duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  Future<void> _navigateToAbout() async {
+    await _snapToPage(1);
+    if (_aboutScrollController.hasClients) {
+      _aboutScrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  Future<void> _navigateToProject() async {
+    final r = ResponsiveScope.of(context);
+    final isMobile = r.isMobile;
+    final aboutH =
+        isMobile ? HomeAboutSection.aboutHMobile + 320 : HomeAboutSection.aboutHDesktop + 700;
+    final projectOffset = aboutH - (isMobile ? 500.0 : 1000.0);
+
+    await _snapToPage(1);
+    if (_aboutScrollController.hasClients) {
+      _aboutScrollController.animateTo(
+        projectOffset,
+        duration: const Duration(milliseconds: 600),
         curve: Curves.easeOutCubic,
       );
     }
@@ -234,7 +254,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             physics: const NeverScrollableScrollPhysics(),
             pageSnapping: false,
             children: [
-              _buildHero(context),
+              _HeroPage(
+                pageProgress: _pageProgress,
+                titleFade: _titleFade,
+                imageFade: _imageFade,
+                onNavigateToAbout: _navigateToAbout,
+                onNavigateToProject: _navigateToProject,
+              ),
               HomeAboutSection(
                 pageController: _pageController,
                 scrollController: _aboutScrollController,
@@ -246,11 +272,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
+}
 
-  Widget _buildHero(BuildContext context) {
+class _HeroPage extends StatelessWidget {
+  final double pageProgress;
+  final Animation<double> titleFade;
+  final Animation<double> imageFade;
+  final VoidCallback onNavigateToAbout;
+  final VoidCallback onNavigateToProject;
+
+  const _HeroPage({
+    required this.pageProgress,
+    required this.titleFade,
+    required this.imageFade,
+    required this.onNavigateToAbout,
+    required this.onNavigateToProject,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final r = ResponsiveScope.of(context);
     final isMobile = r.isMobile;
     final isDesktop = r.isDesktop;
+
+    final navStyle = context.textTheme.bodySmall?.copyWith(
+      fontSize: isMobile ? 14 : null,
+    );
 
     return SizedBox(
       width: r.width,
@@ -258,11 +305,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Stack(
         children: [
           FadeTransition(
-            opacity: _imageFade,
+            opacity: imageFade,
             child: Transform.translate(
-              offset: Offset(-_pageProgress * r.width * 0.1, 0),
+              offset: Offset(-pageProgress * r.width * 0.1, 0),
               child: Opacity(
-                opacity: (1.0 - _pageProgress * 1.4).clamp(0.0, 1.0),
+                opacity: (1.0 - pageProgress * 1.4).clamp(0.0, 1.0),
                 child: Align(
                   alignment: Alignment.bottomRight,
                   child: Container(
@@ -271,8 +318,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     constraints: BoxConstraints(maxHeight: r.height * 0.5),
                     child: ClipRRect(
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular((isMobile ? 150 : 300) * (1.0 - _pageProgress)),
-                        topRight: Radius.circular(_pageProgress * 400),
+                        topLeft: Radius.circular((isMobile ? 150 : 300) * (1.0 - pageProgress)),
+                        topRight: Radius.circular(pageProgress * 400),
                       ),
                       child: Image.asset(
                         AppAssets.hImg2,
@@ -293,14 +340,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(children: [
-                  Text("Home", style: context.textTheme.bodySmall),
+                  Text("Home", style: navStyle),
                   SizedBox(width: isMobile ? 20 : 50),
-                  Text("About", style: context.textTheme.bodySmall),
+                  GestureDetector(
+                    onTap: onNavigateToAbout,
+                    child: Text("About", style: navStyle),
+                  ),
                 ]),
                 Row(children: [
-                  Text("Projects", style: context.textTheme.bodySmall),
+                  GestureDetector(
+                    onTap: onNavigateToProject,
+                    child: Text("Projects", style: navStyle),
+                  ),
                   SizedBox(width: isMobile ? 20 : 50),
-                  Text("Skills", style: context.textTheme.bodySmall),
+                  Text("Skills", style: navStyle),
                 ]),
               ],
             ),
@@ -309,15 +362,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Padding(
               padding: EdgeInsets.only(bottom: r.height * 0.3),
               child: FadeTransition(
-                opacity: _titleFade,
+                opacity: titleFade,
                 child: RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(children: [
-                    TextSpan(text: "Hi, ", style: context.textTheme.titleLarge),
-                    TextSpan(text: "I'm Minsung Kim. ", style: context.textTheme.titleMedium),
+                    TextSpan(
+                      text: "Hi, ",
+                      style: context.textTheme.titleLarge?.copyWith(fontSize: isMobile ? 26 : null),
+                    ),
+                    TextSpan(
+                      text: "I'm Minsung Kim.${isMobile ? "\n" : " "}",
+                      style:
+                          context.textTheme.titleMedium?.copyWith(fontSize: isMobile ? 20 : null),
+                    ),
                     TextSpan(
                       text: "Web App Frontend Developer.",
-                      style: context.textTheme.titleSmall,
+                      style: context.textTheme.titleSmall?.copyWith(fontSize: isMobile ? 20 : null),
                     ),
                   ]),
                 ),

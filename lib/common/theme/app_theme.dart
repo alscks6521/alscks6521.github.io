@@ -35,7 +35,7 @@ class AppTheme {
 
   static TextTheme get suitTextTheme => TextTheme(
         // 필요 범위만 유지/확장
-        displayLarge: _ts(fontSize: 57, fontWeight: FontWeight.w600, letterSpacing: -0.2),
+        displayLarge: _ts(fontSize: 57, fontWeight: FontWeight.w900, letterSpacing: -0.2), //
         displayMedium: _ts(fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.2),
         displaySmall: _ts(fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.2),
 
