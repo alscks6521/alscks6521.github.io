@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:github_portfolio/common/app_assets.dart';
 import 'package:github_portfolio/common/extensions/context_extensions.dart';
 import 'package:github_portfolio/common/responsive/responsive_scope.dart';
+import 'package:github_portfolio/common/theme/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProjectItem {
   final String title;
@@ -9,6 +11,7 @@ class ProjectItem {
   final List<String> useSkill;
   final String imagePath;
   final String contentImagePath;
+  final String? url;
 
   const ProjectItem({
     required this.title,
@@ -16,15 +19,15 @@ class ProjectItem {
     required this.useSkill,
     required this.imagePath,
     required this.contentImagePath,
+    this.url,
   });
 }
 
 const List<ProjectItem> projects = [
   ProjectItem(
     title: '언어 치료 관리 모바일 애플리케이션',
-    subtitle:
-        'ISay App은 언어 치료가 필요한 아동과 보호자, 그리고 치료사를 연결하여 치료 일정 관리와 상담을 지원하는 모바일 애플리케이션입니다.\n\n'
-        '프로젝트에서는 Flutter 기반 모바일 애플리케이션 개발을 전체적으로 담당했습니다.',
+    subtitle: 'ISay App은 언어 치료가 필요한 아동과 보호자, 그리고 치료사를 연결하여 치료 일정 관리와 상담을 지원하는 모바일 애플리케이션입니다.\n\n'
+        'Flutter 기반 모바일 애플리케이션 개발을 전체적으로 담당했습니다.',
     useSkill: [
       'Flutter',
       'Riverpod Provider',
@@ -41,7 +44,7 @@ const List<ProjectItem> projects = [
     title: '언어 치료 관리 웹 플랫폼',
     subtitle:
         'ISay Web은 언어 치료 서비스 이용자와 치료사를 위한 관리 플랫폼으로, 치료 일정 관리, 상담 기능, 사용자 관리 기능 등을 제공하는 웹 서비스입니다.\n\n'
-        '프로젝트에서는 Flutter Web 프론트엔드 개발을 전체적으로 담당했습니다.',
+        'Flutter Web 프론트엔드 개발을 전체적으로 담당했습니다.',
     useSkill: [
       'Flutter',
       'Dio',
@@ -53,43 +56,60 @@ const List<ProjectItem> projects = [
     contentImagePath: AppAssets.scImg2,
   ),
   ProjectItem(
-    title: 'Project Gamma',
-    subtitle: 'Flutter · Firebase',
+    title: 'Dialogflow 음성일정 관리 앱',
+    subtitle: '음성을 인식하여 음성 데이터를 Dialogflow에서 자연어 해석 처리\n\n'
+        '개인 스터디',
     useSkill: [
       'Flutter',
-      'Dio',
-      'Firebase Cloud Messaging',
-      'JavaScript PortOne API SDK',
-      'WebSocket',
+      'Dialogflow',
+      'Firebase',
+      'Speech To Text',
     ],
     imagePath: AppAssets.sImg3,
-    contentImagePath: AppAssets.scImg1,
+    contentImagePath: AppAssets.scImg3,
+    url: 'https://github.com/alscks6521/flutter-voice-recognition-calendar',
   ),
   ProjectItem(
-    title: 'Project Delta',
-    subtitle: 'Flutter · BLE',
+    title: 'OCare - AI Chat 헬스케어 추적 앱',
+    subtitle:
+        'OCare는 헬스케어 추적 앱으로, OpenAI API를 활용하여 사용자의 누적된 건강정보와 AI 챗봇 간의 상호작용을 통해 건강 관리 및 피드백을 제공합니다.\n\n'
+        '스터디그룹 프로젝트로, OpenAI API 연동을 담당했습니다. \n건강기능식품 품목제조신고 API와 Kakao Login, Firebase Auth 등을 활용하여 사용자 인증과 건강 정보 관리를 합니다.',
     useSkill: [
       'Flutter',
-      'Dio',
-      'Firebase Cloud Messaging',
-      'JavaScript PortOne API SDK',
-      'WebSocket',
+      'Open AI API',
+      '건강기능식품 품목제조신고(원재료) API',
+      'Kakao Login',
+      'Firebase Auth',
     ],
-    imagePath: AppAssets.sImg4,
-    contentImagePath: AppAssets.scImg1,
+    imagePath: AppAssets.scImg4,
+    contentImagePath: AppAssets.scImg4,
+    url: 'https://github.com/alscks6521/oc-ai-chat',
   ),
   ProjectItem(
-    title: 'Project Epsilon',
-    subtitle: 'Flutter · WebRTC',
+    title: 'Naver 웹툰 API 연동 - 클론코딩',
+    subtitle: 'Api Naver 웹툰 정보 사용한 앱\n\n'
+        '클론코딩 프로젝트로, Naver 웹툰 API를 활용하여 웹툰 정보를 제공하는 앱을 개발했습니다. \n웹툰 목록, 상세 정보, 이미지 등을 API로부터 받아와 Flutter 앱에서 표시하는 기능을 구현했습니다.',
     useSkill: [
       'Flutter',
-      'Dio',
-      'Firebase Cloud Messaging',
-      'JavaScript PortOne API SDK',
-      'WebSocket',
+      'HTTP',
+      'Naver Webtoon API',
     ],
-    imagePath: AppAssets.sImg5,
-    contentImagePath: AppAssets.scImg2,
+    imagePath: AppAssets.scImg5,
+    contentImagePath: AppAssets.scImg5,
+    url: 'https://github.com/alscks6521/flutter-toonix-review',
+  ),
+  ProjectItem(
+    title: '픽셀 동물 키우기 모바일',
+    subtitle: 'React Native을 활용한 동물 레벨업 시키는 앱 입니다\n\n'
+        'Firebase를 통해 회원의 정보와 동물의 정보를 저장하여, 레벨업에 따라 동물의 외형이 변하는 것이 특징입니다.',
+    useSkill: [
+      'React Native',
+      'Firebase',
+      'React Hook',
+    ],
+    imagePath: AppAssets.sImg6,
+    contentImagePath: AppAssets.scImg6,
+    url: 'https://github.com/alscks6521/RN-animal-games',
   ),
 ];
 
@@ -109,7 +129,7 @@ class HomeProjectSection extends StatefulWidget {
 
 class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProviderStateMixin {
   static const double _rowTriggerInterval = 140.0;
-  static const int _projectCount = 5;
+  static const int _projectCount = 6;
 
   late final List<AnimationController> _cardControllers;
   late final List<Animation<double>> _fadeAnims;
@@ -186,8 +206,9 @@ class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProv
   Widget build(BuildContext context) {
     final r = ResponsiveScope.of(context);
     final isMobile = r.isMobile;
+    final isDesktop = r.isDesktop;
 
-    final int crossCount = isMobile ? 2 : 3;
+    final int crossCount = isDesktop ? 3 : 2;
     final double hPad = isMobile ? 20.0 : 40.0;
     final double gap = isMobile ? 12.0 : 20.0;
 
@@ -228,9 +249,6 @@ class _HomeProjectSectionState extends State<HomeProjectSection> with TickerProv
   }
 }
 
-// ─────────────────────────────────────────────
-// _ProjectCard  (호버 효과 추가)
-// ─────────────────────────────────────────────
 class _ProjectCard extends StatefulWidget {
   final ProjectItem project;
   final int index;
@@ -340,8 +358,6 @@ class _ProjectCardState extends State<_ProjectCard> with SingleTickerProviderSta
 }
 
 // ─────────────────────────────────────────────
-// _CardContent  (이미지 오버레이 shimmer 포함)
-// ─────────────────────────────────────────────
 class _CardContent extends StatelessWidget {
   final ProjectItem project;
   final int index;
@@ -372,16 +388,12 @@ class _CardContent extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 child!,
-
-                Positioned.fill(
-                  child: Container(color: Colors.white.withOpacity(0.06 * hoverAnim.value)),
-                ),
               ],
             ),
             child: SizedBox(
               width: double.infinity,
               child: Image.asset(
-                project.contentImagePath,
+                project.imagePath,
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
               ),
@@ -524,6 +536,19 @@ class _ProjectDetailOverlayState extends State<_ProjectDetailOverlay>
     _innerCtrl.reverse().then((_) => Navigator.of(context).pop());
   }
 
+  Future<void> launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (!await canLaunchUrl(uri)) {
+      throw Exception('URL을 열 수 없습니다: $url');
+    }
+
+    await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bgScale = Tween<double>(
@@ -616,7 +641,7 @@ class _ProjectDetailOverlayState extends State<_ProjectDetailOverlay>
                                   widget.project.contentImagePath,
                                   width: double.infinity,
                                   height: 240,
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                 ),
                               ),
 
@@ -631,11 +656,16 @@ class _ProjectDetailOverlayState extends State<_ProjectDetailOverlay>
                                   height: 1.8,
                                 ),
                               ),
-
+                              const SizedBox(height: 18),
+                              if (widget.project.url != null)
+                                ElevatedButton(
+                                  onPressed: () => launchURL(widget.project.url!),
+                                  child: const Text('GitHub Repository'),
+                                ),
                               const SizedBox(height: 32),
 
                               // 구분선
-                              const Divider(color: Color(0x22FFFFFF), thickness: 1),
+                              const Divider(color: AppColors.line, thickness: 1),
 
                               const SizedBox(height: 24),
 

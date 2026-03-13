@@ -12,7 +12,12 @@ class AppAssets {
   static const sImg3 = 'assets/images/s_img3.png';
   static const sImg4 = 'assets/images/s_img4.png';
   static const sImg5 = 'assets/images/s_img5.png';
+  static const sImg6 = 'assets/images/s_img6.png';
 
   static const scImg1 = 'assets/images/sc_img1.png';
   static const scImg2 = 'assets/images/sc_img2.png';
+  static const scImg3 = 'assets/images/sc_img3.png';
+  static const scImg4 = 'assets/images/sc_img4.png';
+  static const scImg5 = 'assets/images/sc_img5.png';
+  static const scImg6 = 'assets/images/sc_img6.png';
 }

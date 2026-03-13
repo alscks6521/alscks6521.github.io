@@ -4,6 +4,7 @@ import 'package:github_portfolio/common/app_assets.dart';
 import 'package:github_portfolio/common/extensions/context_extensions.dart';
 import 'package:github_portfolio/common/responsive/responsive_scope.dart';
 import 'package:github_portfolio/screens/home/h_views/home_about_section.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -289,6 +290,19 @@ class _HeroPage extends StatelessWidget {
     required this.onNavigateToProject,
   });
 
+  Future<void> launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (!await canLaunchUrl(uri)) {
+      throw Exception('URL을 열 수 없습니다: $url');
+    }
+
+    await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = ResponsiveScope.of(context);
@@ -353,7 +367,9 @@ class _HeroPage extends StatelessWidget {
                     child: Text("Projects", style: navStyle),
                   ),
                   SizedBox(width: isMobile ? 20 : 50),
-                  Text("Skills", style: navStyle),
+                  GestureDetector(
+                      onTap: () => launchURL('https://github.com/alscks6521'),
+                      child: Text("GitHub", style: navStyle)),
                 ]),
               ],
             ),
