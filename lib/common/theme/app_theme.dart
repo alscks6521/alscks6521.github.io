@@ -37,25 +37,39 @@ class AppTheme {
 
   static TextTheme get suitTextTheme => TextTheme(
         // 필요 범위만 유지/확장
-        displayLarge: _ts(fontSize: 57, fontWeight: FontWeight.w900, letterSpacing: -0.2), //
-        displayMedium: _ts(fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.2),
-        displaySmall: _ts(fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.2),
+        displayLarge: _ts(
+            fontSize: 57, fontWeight: FontWeight.w900, letterSpacing: -0.2), //
+        displayMedium:
+            _ts(fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.2),
+        displaySmall:
+            _ts(fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: -0.2),
 
-        headlineLarge: _ts(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.2), //
-        headlineMedium: _ts(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.2), //
+        headlineLarge: _ts(
+            fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.2), //
+        headlineMedium: _ts(
+            fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.2), //
         headlineSmall: _ts(fontSize: 18, fontWeight: FontWeight.w700), //
 
-        titleLarge: _ts(fontSize: 35, fontWeight: FontWeight.w600, letterSpacing: -0.2), //
-        titleMedium: _ts(fontSize: 25, fontWeight: FontWeight.w400, letterSpacing: -0.2), //
-        titleSmall: _ts(fontSize: 25, fontWeight: FontWeight.w200, letterSpacing: -0.2), //
+        titleLarge: _ts(
+            fontSize: 35, fontWeight: FontWeight.w600, letterSpacing: -0.2), //
+        titleMedium: _ts(
+            fontSize: 25, fontWeight: FontWeight.w400, letterSpacing: -0.2), //
+        titleSmall: _ts(
+            fontSize: 25, fontWeight: FontWeight.w200, letterSpacing: -0.2), //
 
-        bodyLarge: _ts(fontSize: 18, fontWeight: FontWeight.w400, letterSpacing: -0.2), //
-        bodyMedium: _ts(fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: -0.2), //
-        bodySmall: _ts(fontSize: 18, fontWeight: FontWeight.w200, letterSpacing: -0.2),
+        bodyLarge: _ts(
+            fontSize: 18, fontWeight: FontWeight.w400, letterSpacing: -0.2), //
+        bodyMedium: _ts(
+            fontSize: 14, fontWeight: FontWeight.w400, letterSpacing: -0.2), //
+        bodySmall:
+            _ts(fontSize: 18, fontWeight: FontWeight.w200, letterSpacing: -0.2),
 
-        labelLarge: _ts(fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: -0.2),
-        labelMedium: _ts(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: -0.2),
-        labelSmall: _ts(fontSize: 11, fontWeight: FontWeight.w400, letterSpacing: -0.2),
+        labelLarge:
+            _ts(fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: -0.2),
+        labelMedium:
+            _ts(fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: -0.2),
+        labelSmall:
+            _ts(fontSize: 11, fontWeight: FontWeight.w400, letterSpacing: -0.2),
       );
 
   static ThemeData get theme {
@@ -102,11 +116,15 @@ class AppTheme {
   }
 
   // “자주 쓰는 프리셋”도 전부 SUIT로 통일
-  static TextStyle suit({double size = 14, FontWeight w = FontWeight.w400, Color? color}) =>
+  static TextStyle suit(
+          {double size = 14, FontWeight w = FontWeight.w400, Color? color}) =>
       _ts(fontSize: size, fontWeight: w, color: color);
 
   static TextStyle suitBoldText(
-          {double fontSize = 22, Color? color, double? letterSpacing = -0.2, double? height = 1}) =>
+          {double fontSize = 22,
+          Color? color,
+          double? letterSpacing = -0.2,
+          double? height = 1}) =>
       _ts(
           fontSize: fontSize,
           fontWeight: FontWeight.w700,
@@ -115,7 +133,10 @@ class AppTheme {
           height: height);
 
   static TextStyle suitExtraBoldText(
-          {double fontSize = 20, Color? color, double? letterSpacing = -0.4, double? height = 1}) =>
+          {double fontSize = 20,
+          Color? color,
+          double? letterSpacing = -0.4,
+          double? height = 1}) =>
       _ts(
           fontSize: fontSize,
           fontWeight: FontWeight.w800,

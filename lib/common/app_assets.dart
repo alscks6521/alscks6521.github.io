@@ -20,4 +20,8 @@ class AppAssets {
   static const scImg4 = 'assets/images/sc_img4.png';
   static const scImg5 = 'assets/images/sc_img5.png';
   static const scImg6 = 'assets/images/sc_img6.png';
+
+  static const laptop = 'assets/n_images/laptop.png';
+  static const phone = 'assets/n_images/phone.png';
+  static const star = 'assets/n_images/star.png';
 }
