@@ -1,207 +1,39 @@
 <!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>김민성 — Web · App Developer</title>
-  <meta name="description" content="Flutter로 웹과 모바일 서비스를 설계부터 배포까지 만드는 개발자 김민성의 포트폴리오." />
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <style>
-    @font-face {
-      font-family: "SUIT";
-      src: url("assets/SUIT-Variable.ttf") format("truetype");
-      font-weight: 100 900;
-      font-display: swap;
-    }
+<html>
+  <head>
+    <base href="/" />
 
-    :root {
-      color-scheme: dark;
-      --max: 720px;
-      --bg: #0b0d10;
-      --surface: #161a1e;
-      --text: #eef1f4;
-      --muted: #9aa5b1;
-      --line: #262c32;
-      --accent: #4cc2ff;
-      --accent-soft: #12232d;
-    }
+    <meta charset="UTF-8" />
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta name="description" content="alscks6521_Portfolio." />
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; scroll-padding-top: 72px; overscroll-behavior-y: auto; }
-    body {
-      font-family: "SUIT", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.7;
-      font-size: 17px;
-      -webkit-font-smoothing: antialiased;
-    }
-    a { color: inherit; text-decoration: none; }
-    a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Minsung Kim Portfolio" />
+    <link rel="apple-touch-icon" href="icons/Icon-192.png" />
 
-    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+    <link rel="icon" type="image/png" href="favicon.png" />
 
-    /* Nav */
-    header {
-      position: sticky; top: 0; z-index: 10;
-      background: color-mix(in srgb, var(--bg) 88%, transparent);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line);
-    }
-    header .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; }
-    .logo { font-weight: 700; letter-spacing: -0.01em; }
-    nav { display: flex; gap: 20px; font-size: 14px; color: var(--muted); }
-    nav a:hover { color: var(--text); }
-
-    section { padding: 96px 0 0; }
-    .label {
-      font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--accent); margin-bottom: 20px;
-    }
-
-    /* Hero */
-    .hero { padding-top: 128px; }
-    .hero h1 {
-      font-size: clamp(36px, 7vw, 56px); line-height: 1.2;
-      font-weight: 800; letter-spacing: -0.03em;
-    }
-    .hero h1 span { color: var(--accent); }
-    .hero p { margin-top: 24px; color: var(--muted); font-size: 19px; max-width: 34em; }
-    .links { display: flex; gap: 12px; margin-top: 36px; flex-wrap: wrap; }
-    .btn {
-      display: inline-block; padding: 10px 20px; border-radius: 999px;
-      font-size: 15px; font-weight: 600; border: 1px solid var(--line);
-      transition: background .2s, border-color .2s;
-    }
-    .btn:hover { background: var(--surface); }
-    .btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
-    .btn.primary:hover { opacity: .85; background: var(--text); }
-
-    /* About */
-    .about p + p { margin-top: 18px; }
-    .about p { color: var(--muted); }
-    .about p strong { color: var(--text); font-weight: 600; }
-
-    /* Projects */
-    .project { padding: 32px 0; border-top: 1px solid var(--line); }
-    .project:last-child { border-bottom: 1px solid var(--line); }
-    .project .idx { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-    .project h3 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 6px 0 12px; }
-    .project p { color: var(--muted); }
-    .project .role { margin-top: 10px; color: var(--text); }
-    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; list-style: none; }
-    .tags li {
-      font-size: 13px; padding: 4px 12px; border-radius: 999px;
-      background: var(--accent-soft); color: var(--accent); font-weight: 500;
-    }
-
-    /* Skills */
-    .skills { display: grid; gap: 20px; }
-    .skills dt { font-size: 14px; color: var(--muted); margin-bottom: 6px; }
-    .skills dd { font-weight: 500; }
-
-    footer { margin-top: 120px; padding: 32px 0 48px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
-
-    /* Reveal */
-    .reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s ease, transform .6s ease; }
-    .reveal.in { opacity: 1; transform: none; }
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .reveal { opacity: 1; transform: none; transition: none; }
-    }
-    @media (max-width: 520px) {
-      body { font-size: 16px; }
-      section { padding-top: 72px; }
-      .hero { padding-top: 88px; }
-      nav { gap: 14px; }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="wrap">
-      <a class="logo" href="#top">김민성</a>
-      <nav aria-label="섹션 이동">
-        <a href="#about">About</a>
-        <a href="#projects">Projects</a>
-        <a href="#skills">Skills</a>
-      </nav>
+    <title>김민성 블로그 | Minsung Kim Portfolio</title>
+    <meta name="description" content="김민성의 포트폴리오 블로그입니다." />
+    <meta name="keywords" content="김민성, 김민성 포트폴리오, 김민성 블로그, 개발자 김민성" />
+    <link rel="manifest" href="manifest.json" />
+  </head>
+  <body>
+    <div style="display:none;">
+    <h1>김민성 포트폴리오</h1>
+    <p>안녕하세요, 김민성입니다!</p>
     </div>
-  </header>
+    <script src="flutter_bootstrap.js" async></script>
 
-  <main id="top">
-    <section class="hero">
-      <div class="wrap reveal">
-        <h1>안녕하세요,<br /><span>김민성</span>입니다.<br />웹·앱 개발자.</h1>
-        <p>Flutter를 중심으로 웹과 모바일 서비스를 만듭니다. 설계부터 개발, 스토어 배포까지 직접 경험했습니다.</p>
-        <div class="links">
-          <a class="btn primary" href="#projects">프로젝트 보기</a>
-          <a class="btn" href="https://github.com/alscks6521" target="_blank" rel="noopener">GitHub</a>
-        </div>
-      </div>
-    </section>
-
-    <section id="about" class="about">
-      <div class="wrap reveal">
-        <div class="label">About</div>
-        <p><strong>Flutter</strong>를 중심으로 웹과 모바일 서비스를 개발하고 있습니다.</p>
-        <p>스타트업에서 앱의 설계부터 개발, 배포까지 전 과정을 담당하며 <strong>Android와 iOS 스토어에 서비스를 직접 출시</strong>한 경험이 있습니다.</p>
-        <p>사용자가 실제로 사용할 수 있는 서비스를 만드는 것을 목표로, 공부를 하며 지속적인 개선에 집중하고 있습니다.</p>
-      </div>
-    </section>
-
-    <section id="projects">
-      <div class="wrap reveal">
-        <div class="label">Projects</div>
-
-        <article class="project">
-          <span class="idx">01</span>
-          <h3>언어 치료 관리 모바일 애플리케이션 <small style="font-weight:500;color:var(--muted)">· ISay App</small></h3>
-          <p>언어 치료가 필요한 아동과 보호자, 그리고 치료사를 연결하여 치료 일정 관리와 상담을 지원하는 모바일 애플리케이션입니다.</p>
-          <p class="role">Flutter 기반 모바일 앱 개발 전체 담당</p>
-          <ul class="tags">
-            <li>Flutter</li><li>Riverpod</li><li>Kakao Auth &amp; Map</li><li>iOS Auth</li>
-            <li>Firebase Cloud Messaging</li><li>PortOne API</li><li>WebSocket</li>
-          </ul>
-        </article>
-
-        <article class="project">
-          <span class="idx">02</span>
-          <h3>언어 치료 관리 웹 플랫폼 <small style="font-weight:500;color:var(--muted)">· ISay Web</small></h3>
-          <p>언어 치료 서비스 이용자와 치료사를 위한 관리 플랫폼으로, 치료 일정 관리, 상담, 사용자 관리 기능을 제공하는 웹 서비스입니다.</p>
-          <p class="role">Flutter Web 개발 전체 담당</p>
-          <ul class="tags">
-            <li>Flutter Web</li><li>Dio</li><li>Firebase Cloud Messaging</li>
-            <li>PortOne JS SDK</li><li>WebSocket</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section id="skills">
-      <div class="wrap reveal">
-        <div class="label">Skills</div>
-        <dl class="skills">
-          <div><dt>Framework</dt><dd>Flutter · Flutter Web</dd></div>
-          <div><dt>State &amp; Network</dt><dd>Riverpod · Dio · WebSocket</dd></div>
-          <div><dt>Integration</dt><dd>Firebase Cloud Messaging · Kakao Auth &amp; Map · PortOne · iOS Auth</dd></div>
-          <div><dt>Release</dt><dd>Google Play · App Store 출시</dd></div>
-        </dl>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="wrap">
-      <span>© 2026 Minsung Kim · 방문해주셔서 감사합니다.</span>
-    </div>
-  </footer>
-
-  <script>
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
-    }, { threshold: 0.12 });
-    document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
-  </script>
-</body>
+    <script>
+      (function () {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect != location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
+  </body>
 </html>
