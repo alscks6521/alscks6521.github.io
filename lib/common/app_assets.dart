@@ -24,4 +24,24 @@ class AppAssets {
   static const laptop = 'assets/n_images/laptop.png';
   static const phone = 'assets/n_images/phone.png';
   static const star = 'assets/n_images/star.png';
+
+  static const isayIcon = 'assets/pro_isay_app/icon.webp';
+  static const isayScreens = [
+    'assets/pro_isay_app/1.webp',
+    'assets/pro_isay_app/2.webp',
+    'assets/pro_isay_app/3.webp',
+    'assets/pro_isay_app/4.webp',
+    'assets/pro_isay_app/5.webp',
+    'assets/pro_isay_app/6.webp',
+    'assets/pro_isay_app/7.webp',
+    'assets/pro_isay_app/8.webp',
+  ];
+
+  static const isayWebIcon = 'assets/pro_isay_web/icon.webp';
+  static const isayWebScreens = [
+    'assets/pro_isay_web/1.webp',
+    'assets/pro_isay_web/2.webp',
+    'assets/pro_isay_web/3.webp',
+    'assets/pro_isay_web/4.webp',
+  ];
 }

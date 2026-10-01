@@ -404,13 +404,14 @@ class _ThemeToggle extends StatelessWidget {
 class _DeviceLink extends StatefulWidget {
   final String asset, tooltip, route;
   final Color color;
-  final double hoverScale;
+  final double hoverScale, radius;
   const _DeviceLink({
     required this.asset,
     required this.tooltip,
     required this.route,
     required this.color,
     this.hoverScale = 1.12,
+    this.radius = 0,
   });
 
   @override
@@ -467,7 +468,10 @@ class _DeviceLinkState extends State<_DeviceLink> {
             scale: active ? widget.hoverScale : 1.0,
             duration: const Duration(milliseconds: 280),
             curve: Curves.easeOutBack,
-            child: Image.asset(widget.asset),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(widget.radius),
+              child: Image.asset(widget.asset),
+            ),
           ),
         ),
       ),
@@ -995,9 +999,14 @@ class _About extends StatelessWidget {
 }
 
 class _ProjectData {
-  final String title, tag, description, role, image;
-  final List<String> skills;
-  const _ProjectData(this.title, this.tag, this.description, this.role, this.image, this.skills);
+  final String title, tag, description, role, image, tooltip;
+  final String route;
+  final List<String> skills, screens;
+  final double imageRadius;
+  final int screenCols;
+  const _ProjectData(this.title, this.tag, this.description, this.role, this.image, this.tooltip,
+      this.route, this.skills,
+      {this.screens = const [], this.imageRadius = 0, this.screenCols = 4});
 }
 
 const _projects = [
@@ -1006,7 +1015,9 @@ const _projects = [
     'ISay App',
     '언어 치료가 필요한 아동과 보호자, 그리고 치료사를 연결하여 치료 일정 관리와 상담을 지원하는 모바일 애플리케이션입니다.',
     'Flutter 기반 모바일 앱 개발 전체 담당',
-    AppAssets.phone,
+    AppAssets.isayIcon,
+    '앱 프로젝트 보러가기',
+    AppScreen.appPro,
     [
       'Flutter',
       'Riverpod',
@@ -1016,14 +1027,21 @@ const _projects = [
       'PortOne API',
       'WebSocket'
     ],
+    screens: AppAssets.isayScreens,
+    imageRadius: 16,
   ),
   _ProjectData(
     '언어 치료 관리 웹 플랫폼',
     'ISay Web',
     '언어 치료 서비스 이용자와 치료사를 위한 관리 플랫폼으로, 치료 일정 관리, 상담, 사용자 관리 기능을 제공하는 웹 서비스입니다.',
     'Flutter Web 개발 전체 담당',
-    AppAssets.laptop,
+    AppAssets.isayWebIcon,
+    '웹 프로젝트 보러가기',
+    AppScreen.webPro,
     ['Flutter Web', 'Dio', 'Firebase Cloud Messaging', 'PortOne JS SDK', 'WebSocket'],
+    screens: AppAssets.isayWebScreens,
+    imageRadius: 16,
+    screenCols: 2,
   ),
 ];
 
@@ -1045,7 +1063,7 @@ class _Projects extends StatelessWidget {
   }
 }
 
-class _ProjectTile extends StatelessWidget {
+class _ProjectTile extends StatefulWidget {
   final int index;
   final _ProjectData data;
   final _Palette palette;
@@ -1054,8 +1072,31 @@ class _ProjectTile extends StatelessWidget {
       {required this.index, required this.data, required this.palette, required this.last});
 
   @override
+  State<_ProjectTile> createState() => _ProjectTileState();
+}
+
+class _ProjectTileState extends State<_ProjectTile> {
+  final _id = UniqueKey();
+  bool _open = false;
+
+  @override
   Widget build(BuildContext context) {
-    final c = palette;
+    final c = widget.palette;
+    final data = widget.data;
+    final index = widget.index;
+    final last = widget.last;
+    return VisibilityDetector(
+      key: _id,
+      onVisibilityChanged: (info) {
+        if (!_open && data.screens.isNotEmpty && info.visibleFraction > 0.5 && mounted) {
+          setState(() => _open = true);
+        }
+      },
+      child: _tile(context, c, data, index, last),
+    );
+  }
+
+  Widget _tile(BuildContext context, _Palette c, _ProjectData data, int index, bool last) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
@@ -1077,10 +1118,11 @@ class _ProjectTile extends StatelessWidget {
                 height: MediaQuery.sizeOf(context).width < 520 ? 48 : 72,
                 child: _DeviceLink(
                   asset: data.image,
-                  tooltip: data.image == AppAssets.phone ? '앱 프로젝트 보러가기' : '웹 프로젝트 보러가기',
-                  route: data.image == AppAssets.phone ? AppScreen.appPro : AppScreen.webPro,
+                  tooltip: data.tooltip,
+                  route: data.route,
                   color: c.accent,
                   hoverScale: 1.25,
+                  radius: data.imageRadius * (MediaQuery.sizeOf(context).width < 520 ? 48 : 72) / 72,
                 ),
               ),
             ],
@@ -1116,8 +1158,63 @@ class _ProjectTile extends StatelessWidget {
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: c.accent)),
               ),
           ]),
+          if (data.screens.isNotEmpty) _ScreenGallery(screens: data.screens, cols: data.screenCols, open: _open),
         ],
       ),
+    );
+  }
+}
+
+/// 타일이 화면에 들어오면 한 번만 아래로 부드럽게 펼쳐지며 스크린샷을 보여준다.
+class _ScreenGallery extends StatelessWidget {
+  final List<String> screens;
+  final int cols;
+  final bool open;
+  const _ScreenGallery({required this.screens, required this.cols, required this.open});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeInOutCubic,
+      alignment: Alignment.topCenter,
+      child: open ? _grid(context) : const SizedBox(width: double.infinity, height: 0),
+    );
+  }
+
+  Widget _grid(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 28),
+      child: LayoutBuilder(builder: (context, box) {
+        const gap = 12.0;
+        final cols = box.maxWidth < 520 ? (this.cols + 1) ~/ 2 : this.cols;
+        final w = (box.maxWidth - gap * (cols - 1)) / cols;
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (var i = 0; i < screens.length; i++)
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1),
+                duration: Duration(milliseconds: 600 + i * 120),
+                curve: Curves.easeOut,
+                builder: (context, t, child) => Opacity(
+                  opacity: t,
+                  child: Transform.translate(offset: Offset(0, (1 - t) * 24), child: child),
+                ),
+                child: SizedBox(
+                  width: w,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(screens[i],
+                        cacheWidth: (w * dpr).round(), fit: BoxFit.fitWidth),
+                  ),
+                ),
+              ),
+          ],
+        );
+      }),
     );
   }
 }
