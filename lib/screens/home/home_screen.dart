@@ -1004,9 +1004,10 @@ class _ProjectData {
   final List<String> skills, screens;
   final double imageRadius;
   final int screenCols;
+  final bool released; // App Store · Google Play 출시 여부
   const _ProjectData(this.title, this.tag, this.description, this.role, this.image, this.tooltip,
       this.route, this.skills,
-      {this.screens = const [], this.imageRadius = 0, this.screenCols = 4});
+      {this.screens = const [], this.imageRadius = 0, this.screenCols = 4, this.released = false});
 }
 
 const _projects = [
@@ -1029,6 +1030,7 @@ const _projects = [
     ],
     screens: AppAssets.isayScreens,
     imageRadius: 16,
+    released: true,
   ),
   _ProjectData(
     '언어 치료 관리 웹 플랫폼',
@@ -1146,7 +1148,23 @@ class _ProjectTileState extends State<_ProjectTile> {
           const SizedBox(height: 12),
           Text(data.description, style: TextStyle(fontSize: 17, height: 1.7, color: c.muted)),
           const SizedBox(height: 10),
-          Text(data.role, style: TextStyle(fontSize: 17, height: 1.7, color: c.text)),
+          Text.rich(TextSpan(
+            style: TextStyle(fontSize: 17, height: 1.7, color: c.text),
+            children: [
+              TextSpan(text: data.role),
+              if (data.released) ...[
+                const TextSpan(text: '  '),
+                WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: _StoreBadge(icon: Icons.apple, tooltip: 'App Store 출시', palette: c)),
+                const TextSpan(text: ' '),
+                WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child:
+                        _StoreBadge(icon: Icons.android, tooltip: 'Google Play 출시', palette: c)),
+              ],
+            ],
+          )),
           const SizedBox(height: 18),
           Wrap(spacing: 8, runSpacing: 8, children: [
             for (final s in data.skills)
@@ -1160,6 +1178,31 @@ class _ProjectTileState extends State<_ProjectTile> {
           ]),
           if (data.screens.isNotEmpty) _ScreenGallery(screens: data.screens, cols: data.screenCols, open: _open),
         ],
+      ),
+    );
+  }
+}
+
+/// 스토어 출시 인증용 작은 원형 뱃지.
+class _StoreBadge extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final _Palette palette;
+  const _StoreBadge({required this.icon, required this.tooltip, required this.palette});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          color: palette.accentSoft,
+          shape: BoxShape.circle,
+          border: Border.all(color: palette.accent, width: 1.2),
+        ),
+        child: Icon(icon, size: 15, color: palette.accent),
       ),
     );
   }
@@ -1188,13 +1231,14 @@ class _ScreenGallery extends StatelessWidget {
       child: LayoutBuilder(builder: (context, box) {
         const gap = 12.0;
         final cols = box.maxWidth < 520 ? (this.cols + 1) ~/ 2 : this.cols;
-        final w = (box.maxWidth - gap * (cols - 1)) / cols;
+        final w = (box.maxWidth - gap * (cols - 1)) / cols / 2;
         final dpr = MediaQuery.devicePixelRatioOf(context);
         return Wrap(
           spacing: gap,
           runSpacing: gap,
           children: [
-            for (var i = 0; i < screens.length; i++)
+            // 한 줄만 보여준다.
+            for (var i = 0; i < screens.length && i < cols; i++)
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0, end: 1),
                 duration: Duration(milliseconds: 600 + i * 120),
