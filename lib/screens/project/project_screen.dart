@@ -14,19 +14,19 @@ const _accent = Color(0xFF4CC2FF);
 class ProjectItem {
   final String title, summary, description, icon;
   final List<String> skills, screens;
+  final List<String> highlights; // 그리드 카드에 보여줄 핵심 기술 몇 개
+  final bool released; // App Store · Google Play 출시 여부 (뱃지 표시)
 
   // 한눈에 보기
+  final String category; // 구분 예) 전 직장 프로젝트, 개인 프로젝트
   final String period; // 개발 기간 예) 2024.03 ~ 2024.12
   final String team; // 참여 인원 예) 4명 (FE 1, BE 2, 디자인 1)
   final String role; // 담당 역할 예) Flutter 앱 개발 전체
-  final String status; // 상태 예) App Store · Google Play 출시
 
-  final String problem; // 왜 만들었나 (배경 / 해결하려던 문제)
   final List<String> features; // 주요 기능
   final List<String> contributions; // 내가 한 일 (구체적으로)
   final List<ProjectIssue> issues; // 기술적 문제와 해결
   final List<String> results; // 성과 / 배운 점
-  final Map<String, String> links; // 링크 (이름 → URL)
 
   const ProjectItem({
     required this.title,
@@ -35,16 +35,16 @@ class ProjectItem {
     required this.icon,
     this.skills = const [],
     this.screens = const [],
+    this.highlights = const [],
+    this.released = false,
+    this.category = '',
     this.period = '',
     this.team = '',
     this.role = '',
-    this.status = '',
-    this.problem = '',
     this.features = const [],
     this.contributions = const [],
     this.issues = const [],
     this.results = const [],
-    this.links = const {},
   });
 }
 
@@ -140,12 +140,19 @@ class _ProjectCard extends StatefulWidget {
   static const _summary = TextStyle(fontSize: 14, height: 1.5, color: _muted);
   static const _link =
       TextStyle(fontSize: 13, height: 1.4, fontWeight: FontWeight.w600, color: _accent);
+  static const _chip =
+      TextStyle(fontSize: 12, height: 1.4, fontWeight: FontWeight.w500, color: _accent);
+  static const _chipGap = 10.0, _chipPadV = 3.0;
 
-  /// 카드에 필요한 높이: 패딩·테두리 + 아이콘 + 간격 + 글자 줄(글자 배율 반영) + 여유.
+  static double _chipHeight(TextScaler scaler) =>
+      scaler.scale(_chip.fontSize!) * _chip.height! + _chipPadV * 2;
+
+  /// 카드에 필요한 높이: 패딩·테두리 + 아이콘 + 간격 + 글자 줄 + 기술 칩 한 줄(글자 배율 반영) + 여유.
   static double extent(TextScaler scaler) {
     double line(TextStyle s) => scaler.scale(s.fontSize!) * s.height!;
     return _pad * 2 + 2 + _icon + _gap + _titleGap + _linkGap +
-        line(_cardTitle) + line(_summary) * 2 + line(_link) + 8;
+        line(_cardTitle) + line(_summary) * 2 + line(_link) +
+        _chipGap + _chipHeight(scaler) + 8;
   }
 
   @override
@@ -177,6 +184,7 @@ class _ProjectCardState extends State<_ProjectCard> {
             Row(children: [
               _IconHero(item: item, size: _ProjectCard._icon, radius: 12),
               const Spacer(),
+              if (item.released) ...[const _StoreBadges(), const SizedBox(width: 12)],
               Text('0${widget.index}', style: const TextStyle(fontSize: 13, color: _muted)),
             ]),
             const SizedBox(height: _ProjectCard._gap),
@@ -185,6 +193,24 @@ class _ProjectCardState extends State<_ProjectCard> {
             const SizedBox(height: _ProjectCard._titleGap),
             Text(item.summary,
                 maxLines: 2, overflow: TextOverflow.ellipsis, style: _ProjectCard._summary),
+            const SizedBox(height: _ProjectCard._chipGap),
+            // 핵심 기술은 한 줄만 (넘치는 칩은 잘라서 카드 높이를 고정)
+            SizedBox(
+              height: _ProjectCard._chipHeight(MediaQuery.textScalerOf(context)),
+              child: ClipRect(
+                child: Wrap(spacing: 6, runSpacing: 6, children: [
+                  for (final h in item.highlights)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: _ProjectCard._chipPadV),
+                      decoration: BoxDecoration(
+                          color: _accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(999)),
+                      child: Text(h, maxLines: 1, style: _ProjectCard._chip),
+                    ),
+                ]),
+              ),
+            ),
             const SizedBox(height: _ProjectCard._linkGap),
             const Text('자세히 보기 →',
                 maxLines: 1, overflow: TextOverflow.ellipsis, style: _ProjectCard._link),
@@ -320,6 +346,7 @@ class _DetailBody extends StatelessWidget {
         Expanded(
           child: _TitleHero(item: item, style: _detailTitle),
         ),
+        if (item.released) ...[const SizedBox(width: 12), const _StoreBadges()],
       ]),
       const SizedBox(height: 18),
       Text(item.description, style: const TextStyle(fontSize: 16, height: 1.7, color: _muted)),
@@ -359,13 +386,12 @@ class _DetailInfo extends StatelessWidget {
         decoration: BoxDecoration(
             color: _bg, borderRadius: BorderRadius.circular(14), border: Border.all(color: _line)),
         child: Wrap(spacing: 32, runSpacing: 14, children: [
+          _Fact('구분', item.category),
           _Fact('기간', item.period),
           _Fact('인원', item.team),
           _Fact('역할', item.role),
-          _Fact('상태', item.status),
         ]),
       ),
-      _Section('왜 만들었나', item.problem.isEmpty ? null : _Body(item.problem)),
       _Section('주요 기능', item.features.isEmpty ? null : _Bullets(item.features)),
       _Section('내가 한 일', item.contributions.isEmpty ? null : _Bullets(item.contributions)),
       _Section(
@@ -374,11 +400,6 @@ class _DetailInfo extends StatelessWidget {
               ? null
               : Column(children: [for (final e in item.issues) _IssueCard(e)])),
       _Section('성과 · 배운 점', item.results.isEmpty ? null : _Bullets(item.results)),
-      _Section(
-          '링크',
-          item.links.isEmpty
-              ? null
-              : _Bullets([for (final e in item.links.entries) '${e.key}  ${e.value}'])),
       _Section(
           '기술 스택',
           item.skills.isEmpty
@@ -660,3 +681,30 @@ class _TitleHero extends StatelessWidget {
 /// 아이콘 원본(1024px 이상)을 그대로 디코딩하지 않도록 고정 크기로 줄인다.
 /// 카드·상세·히어로 비행이 같은 키를 써서 한 번만 디코딩된다.
 ImageProvider _iconImage(String asset) => ResizeImage(AssetImage(asset), width: 192);
+
+/// App Store · Google Play 출시 인증용 작은 원형 뱃지 두 개.
+class _StoreBadges extends StatelessWidget {
+  const _StoreBadges();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget badge(IconData icon, String tip) => Tooltip(
+          message: tip,
+          child: Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: _accent.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+              border: Border.all(color: _accent, width: 1.2),
+            ),
+            child: Icon(icon, size: 15, color: _accent),
+          ),
+        );
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      badge(Icons.apple, 'App Store 출시'),
+      const SizedBox(width: 6),
+      badge(Icons.android, 'Google Play 출시'),
+    ]);
+  }
+}

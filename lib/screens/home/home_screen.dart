@@ -983,16 +983,43 @@ class _About extends StatelessWidget {
             _Label('About', palette),
             Text.rich(TextSpan(style: body, children: [
               TextSpan(text: 'Flutter', style: strong),
-              const TextSpan(text: '를 중심으로 웹과 모바일 서비스를 개발하고 있습니다.'),
+              const TextSpan(text: '를 중심으로 모바일 앱과 웹 서비스를 만드는 개발자입니다.'),
             ])),
             const SizedBox(height: 18),
             Text.rich(TextSpan(style: body, children: [
-              const TextSpan(text: '스타트업에서 앱의 설계부터 개발, 배포까지 전 과정을 담당하며 '),
-              TextSpan(text: 'Android와 iOS 스토어에 서비스를 직접 출시', style: strong),
-              const TextSpan(text: '한 경험이 있습니다.'),
+              const TextSpan(text: '실무에서 모바일 앱과 웹을 개발해 '),
+              TextSpan(text: 'App Store · Google Play에 출시', style: strong),
+              const TextSpan(text: '했고, 서버 API 개발에도 함께 참여했습니다.'),
             ])),
             const SizedBox(height: 18),
-            Text('사용자가 실제로 사용할 수 있는 서비스를 만드는 것을 목표로, 공부를 하며 지속적인 개선에 집중하고 있습니다.', style: body),
+            Text.rich(TextSpan(style: body, children: [
+              const TextSpan(text: '텍스트 임베딩 기반 의도 분류와 '),
+              TextSpan(text: 'RAG(AWS Bedrock)', style: strong),
+              const TextSpan(text: '로 누적된 치료 데이터를 분석해 평가서를 생성하는 AI 기능을 실제 서비스에 적용했습니다.'),
+            ])),
+            const SizedBox(height: 28),
+            for (final (label, value) in const [
+              ('Education', '컴퓨터공학 학사'),
+              ('Training', '한국소프트웨어 3년 교육과정 수료'),
+            ])
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SizedBox(
+                    width: 96,
+                    child: Text(label,
+                        style: TextStyle(fontSize: 14, height: 1.9, color: palette.muted)),
+                  ),
+                  Expanded(
+                    child: Text(value,
+                        style: TextStyle(
+                            fontSize: 16,
+                            height: 1.7,
+                            fontWeight: FontWeight.w600,
+                            color: palette.text)),
+                  ),
+                ]),
+              ),
           ],
         ));
   }
@@ -1019,15 +1046,7 @@ const _projects = [
     AppAssets.isayIcon,
     '앱 프로젝트 보러가기',
     AppScreen.appPro,
-    [
-      'Flutter',
-      'Riverpod',
-      'Kakao Auth & Map',
-      'iOS Auth',
-      'Firebase Cloud Messaging',
-      'PortOne API',
-      'WebSocket'
-    ],
+    ['Flutter', 'Riverpod', 'AWS Bedrock', 'RAG', 'LLM', 'WebSocket', 'Firebase Cloud Messaging'],
     screens: AppAssets.isayScreens,
     imageRadius: 16,
     released: true,
@@ -1040,7 +1059,7 @@ const _projects = [
     AppAssets.isayWebIcon,
     '웹 프로젝트 보러가기',
     AppScreen.webPro,
-    ['Flutter Web', 'Dio', 'Firebase Cloud Messaging', 'PortOne JS SDK', 'WebSocket'],
+    ['Flutter Web', 'WebSocket', 'Firebase Cloud Messaging', 'PortOne 구독 결제', '역할 기반 권한'],
     screens: AppAssets.isayWebScreens,
     imageRadius: 16,
     screenCols: 2,
@@ -1268,10 +1287,12 @@ class _Skills extends StatelessWidget {
   const _Skills({required this.palette});
 
   static const _rows = [
-    ('Framework', 'Flutter · Flutter Web'),
-    ('State & Network', 'Riverpod · Dio · WebSocket'),
-    ('Integration', 'Firebase Cloud Messaging · Kakao Auth & Map · PortOne · iOS Auth'),
-    ('Release', 'Google Play · App Store 출시'),
+    ('Framework', 'Flutter · Flutter Web · Riverpod'),
+    ('AI', 'AWS Bedrock (Serverless) · RAG · Text Embedding · Vector Search · LLM Intent Classification'),
+    ('Realtime', 'WebSocket 채팅 · Firebase Cloud Messaging'),
+    ('Backend', 'REST API 설계·개발 · 역할 기반 권한'),
+    ('Payment', 'PortOne 구독 결제'),
+    ('Release', 'App Store · Google Play 출시'),
   ];
 
   @override

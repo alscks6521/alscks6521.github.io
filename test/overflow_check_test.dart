@@ -12,10 +12,11 @@ void main() {
       icon: AppAssets.isayIcon,
       skills: ['Flutter', 'Riverpod', 'Kakao Auth & Map', 'iOS Auth', 'Firebase Cloud Messaging'],
       screens: AppAssets.isayScreens,
+      released: true,
+      highlights: ['Flutter', 'Riverpod', 'AWS Bedrock', 'RAG', 'LLM', 'Text Embedding', 'WebSocket'],
       period: '2024.03 ~ 2024.12 (아주 긴 기간 설명 텍스트)',
       team: '4명 (FE 1, BE 2, 디자인 1)',
       role: 'Flutter 앱 개발 전체 담당 및 배포',
-      status: 'App Store · Google Play 출시',
       issues: [ProjectIssue(problem: '문제 ' * 20, solution: '해결 ' * 20, result: '결과 ' * 10)],
       features: ['기능 하나', '기능 둘'],
     ),
@@ -74,6 +75,7 @@ void main() {
     }
   }
 }
+
 
 
 
