@@ -46,6 +46,9 @@ class ProjectItem {
     this.issues = const [],
     this.results = const [],
   });
+
+  /// 주소용 식별자 예) ISay App → isay-app
+  String get slug => title.toLowerCase().replaceAll(' ', '-');
 }
 
 /// 기술적 문제 → 해결 → 결과 한 묶음.
@@ -55,20 +58,45 @@ class ProjectIssue {
 }
 
 /// 프로젝트를 한눈에 보여주는 그리드. 비어 있는 칸은 빈 그리드로 채운다.
-class ProjectScreen extends StatelessWidget {
+class ProjectScreen extends StatefulWidget {
   final String title;
   final String description;
   final List<ProjectItem> items;
   final int minSlots;
+  final String? open; // 들어오자마자 상세를 펼칠 프로젝트 slug
   const ProjectScreen(
       {super.key,
       required this.title,
       required this.description,
       this.items = const [],
-      this.minSlots = 6});
+      this.minSlots = 6,
+      this.open});
+
+  @override
+  State<ProjectScreen> createState() => _ProjectScreenState();
+}
+
+class _ProjectScreenState extends State<ProjectScreen> {
+  final _cardKeys = <String, GlobalKey>{};
+
+  GlobalKey _keyOf(ProjectItem item) => _cardKeys.putIfAbsent(item.slug, GlobalKey.new);
+
+  @override
+  void initState() {
+    super.initState();
+    final item = widget.items.where((it) => it.slug == widget.open).firstOrNull;
+    if (item == null) return;
+    // 페이지 전환이 끝난 뒤, 해당 카드 자리에서 상세를 펼친다.
+    Future.delayed(const Duration(milliseconds: 650), () {
+      final ctx = _cardKeys[item.slug]?.currentContext;
+      if (ctx != null && ctx.mounted) _openDetail(ctx, item);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final title = widget.title, description = widget.description, items = widget.items;
+    final minSlots = widget.minSlots;
     for (final it in items) {
       precacheImage(_iconImage(it.icon), context);
     }
@@ -116,7 +144,7 @@ class ProjectScreen extends StatelessWidget {
                     ),
                     delegate: SliverChildBuilderDelegate(
                       (context, i) => i < items.length
-                          ? _ProjectCard(item: items[i], index: i + 1)
+                          ? _ProjectCard(key: _keyOf(items[i]), item: items[i], index: i + 1)
                           : const _EmptyCard(),
                       childCount: slots,
                     ),
@@ -134,7 +162,7 @@ class ProjectScreen extends StatelessWidget {
 class _ProjectCard extends StatefulWidget {
   final ProjectItem item;
   final int index;
-  const _ProjectCard({required this.item, required this.index});
+  const _ProjectCard({super.key, required this.item, required this.index});
 
   static const _pad = 20.0, _icon = 48.0, _gap = 16.0, _titleGap = 6.0, _linkGap = 12.0;
   static const _summary = TextStyle(fontSize: 14, height: 1.5, color: _muted);
