@@ -1,7 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:github_portfolio/common/app_assets.dart';
-import 'package:github_portfolio/screens/project/project_screen.dart';
+import 'package:github_portfolio/core/constants/app_assets.dart';
+import 'package:github_portfolio/features/project/domain/entities/project.dart';
+import 'package:github_portfolio/features/project/presentation/pages/project_screen.dart';
 
 void main() {
   final items = [
