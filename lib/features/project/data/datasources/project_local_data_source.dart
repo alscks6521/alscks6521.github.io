@@ -6,9 +6,87 @@ import 'package:github_portfolio/features/project/domain/entities/project.dart';
 class ProjectLocalDataSource {
   const ProjectLocalDataSource();
 
-  List<ProjectItem> get appProjects => const [_isayApp];
+  List<ProjectItem> get appProjects => const [_stackingApp, _isayApp];
   List<ProjectItem> get webProjects => const [_isayWeb];
 }
+
+const _stackingApp = ProjectItem(
+  title: 'Stacking App',
+  summary: ' SNS형 노출 없이 링크를 보관하고 소수와만 공유하는 프라이빗 링크 금고 — 앱·웹 실시간 동기화',
+  description:
+      ' 평소에는 나만 보는 개인 링크 금고로 쓰고, 필요할 때만 고유 코드(UID)로 연인·가족·친구 같은 소수와 비공개 공유방을 만들어 링크를 실시간으로 모으는 앱입니다. Android · iOS 앱뿐 아니라 같은 Flutter 코드베이스로 만든 웹 버전(Firebase Hosting)도 제공해, PC 브라우저에서 같은 계정으로 로그인하면 앱과 웹의 링크·공유방이 실시간으로 동기화됩니다. 완전한 프라이버시 기본값(default-private)과 결제 유도 없음을 원칙으로, 별도 백엔드 서버 없이 Firebase만으로 구성하고 AdMob 배너 광고로 운영 비용을 충당합니다.',
+  icon: AppAssets.stackingIcon,
+  category: '개인 프로젝트',
+  team: '1명 (개인)',
+  role: '기획 · 앱/웹 개발 · Firebase 구성 전체',
+  features: [
+    '앱 · 웹 크로스플랫폼 실시간 동기화 — Android · iOS 앱과 web.app 웹 버전이 같은 Firestore 데이터를 구독해, 휴대폰에서 저장한 링크가 PC 브라우저에 바로 나타나고 반대도 마찬가지',
+    '내 링크 금고 — 카테고리 폴더 단위로 링크를 관리하는 1인 전용 저장소로, 다른 사용자에게 노출되지 않는 것이 기본값',
+    '비공개 공유방 — 8자리 UID 코드로 생성·참여하는 방. 방 목록 조회(list)를 보안 규칙으로 막아 코드를 아는 사람만 참여하고, 멤버끼리 링크를 실시간으로 공유',
+    '사본(copy) 방식 공유 — 방에 올린 링크는 원본과 독립된 사본이라 원본을 수정·삭제해도 따라가지 않고, 방을 나가도 과거에 공유한 링크는 유지',
+    '외부 공유 바텀시트 — 브라우저·카카오톡 등에서 "공유"하면 화면 전환 없이 바텀시트가 올라와 URL·제목 미리보기와 저장 위치(내 금고 / 참여 중인 방)를 선택',
+    '초경량 키워드 자동 분류 — 폴더별 등록 키워드와 공유된 제목을 대소문자 무시 부분일치로 비교해 카테고리를 추천. 서버 AI 호출 없이 100% 클라이언트에서 동작하며 터치 한 번으로 저장',
+    '오프라인 우선 — Firestore 기본 오프라인 퍼시스턴스로 네트워크가 없어도 조회·저장 후 자동 동기화',
+    'AdMob 배너 광고 — 화면 흐름을 가리지 않는 배너 광고로 수익화',
+  ],
+  contributions: [
+    '제품 기획부터 Flutter 앱, Firestore 데이터 모델·보안 규칙, Cloud Functions까지 단독 설계·개발',
+    '하나의 Flutter 코드베이스로 모바일 앱과 웹 버전을 함께 빌드하고, 웹은 Firebase Hosting(stacking-browser.web.app)에 배포해 앱과 같은 계정·데이터로 동기화되도록 구성',
+    'Feature-first Clean Architecture(auth · vault · room · share_intent)와 Cubit + freezed 상태 관리, get_it + injectable DI 구조 수립',
+    'Unit · Widget · Integration 테스트와 Firestore 보안 규칙 테스트(@firebase/rules-unit-testing)로 권한 경계를 검증',
+    '이용약관 · 개인정보처리방침 페이지를 Firebase Hosting과 커스텀 서브도메인으로 배포',
+    'Google AdMob 배너 광고를 연동하고 app-ads.txt로 앱 광고 판매자 인증을 구성',
+    'App Store · Google Play에 직접 출시',
+  ],
+  issues: [
+    ProjectIssue(
+      problem:
+          '별도 서버 없이 클라이언트 SDK로 Firestore에 직접 접근하는 구조라, 앱 코드만으로는 다른 사람의 금고나 모르는 방을 조회하는 것을 막을 수 없었습니다.',
+      solution:
+          '권한 판단을 Firestore 보안 규칙으로 옮겨, 금고는 본인만 읽고 쓰게 하고 공유방은 목록 조회(list)를 금지한 채 UID로 단건 조회한 멤버만 접근하도록 설계했습니다. 규칙은 에뮬레이터 기반 테스트로 검증하고 CLI로 배포해 콘솔 수동 수정에 의한 드리프트를 막았습니다.',
+      result: '서버 없이도 "사용자의 명시적 선택 없이는 개인 데이터가 노출되지 않는다"는 원칙을 데이터 계층에서 보장할 수 있었습니다.',
+    ),
+    ProjectIssue(
+      problem: '외부 앱에서 링크를 공유할 때마다 카테고리를 고르게 하면 저장 흐름이 길어지고, 서버 AI 분류는 비용과 지연이 생겼습니다.',
+      solution:
+          '폴더마다 사용자가 키워드를 등록하게 하고, 공유된 제목과 대소문자 무시 부분일치로 비교해 추천 카테고리를 미리 선택해 두는 클라이언트 매칭으로 구현했습니다.',
+      result: '추가 비용 없이 바텀시트에서 확인 터치 한 번으로 저장이 끝나는 흐름을 만들었습니다.',
+    ),
+  ],
+  results: [
+    '하나의 코드베이스로 앱과 웹을 함께 출시해, 사용자가 휴대폰과 PC를 오가며 같은 데이터를 이어 쓰는 경험을 만들었습니다.',
+    '서버 없이 Firebase만으로 MVP를 구성하며, 권한·데이터 무결성을 보안 규칙과 그 테스트로 책임지는 서버리스 설계를 익혔습니다.',
+    '기획 문서 · 아키텍처 표준 · 테스트 전략 · 품질 게이트를 먼저 정해 두고 개발하며, 혼자 하는 프로젝트에서도 일관된 품질을 유지하는 방법을 배웠습니다.',
+  ],
+  released: true,
+  appStoreUrl: 'https://apps.apple.com/kr/app/stacking/id6823903080',
+  playStoreUrl:
+      'https://play.google.com/store/apps/details?id=com.minsung.stacking',
+  webUrl: 'https://stacking-browser.web.app',
+  highlights: ['Flutter', 'Flutter Web', '앱·웹 동기화', 'Firebase'],
+  skills: [
+    'Flutter',
+    'Flutter Web',
+    'Dart',
+    'flutter_bloc (Cubit)',
+    'freezed',
+    'go_router',
+    'get_it · injectable',
+    'Clean Architecture',
+    // Firebase
+    'Firebase Auth',
+    'Cloud Firestore',
+    'Firestore Security Rules',
+    'Cloud Functions',
+    'Firebase Hosting',
+    // 수익화
+    'Google AdMob (배너 광고)',
+    // 테스트
+    'bloc_test · mocktail',
+    'fake_cloud_firestore',
+  ],
+  screens: AppAssets.stackingScreens,
+);
 
 const _isayApp = ProjectItem(
   title: 'ISay App',

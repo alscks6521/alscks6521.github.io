@@ -116,7 +116,13 @@ class _DetailBody extends StatelessWidget {
         Expanded(
           child: ProjectTitleHero(item: item, style: detailTitleStyle),
         ),
-        if (item.released) ...[const SizedBox(width: 12), const StoreBadges()],
+        if (item.released) ...[
+          const SizedBox(width: 12),
+          StoreBadges(
+              appStoreUrl: item.appStoreUrl,
+              playStoreUrl: item.playStoreUrl,
+              webUrl: item.webUrl),
+        ],
       ]),
       const SizedBox(height: 18),
       Text(item.description,
@@ -163,7 +169,7 @@ class _DetailInfo extends StatelessWidget {
             border: Border.all(color: ProjectColors.line)),
         child: Wrap(spacing: 32, runSpacing: 14, children: [
           _Fact('구분', item.category),
-          _Fact('기간', item.period),
+          if (item.period.isNotEmpty) _Fact('기간', item.period),
           _Fact('인원', item.team),
           _Fact('역할', item.role),
         ]),

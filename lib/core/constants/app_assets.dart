@@ -44,4 +44,13 @@ class AppAssets {
     'assets/pro_isay_web/3.webp',
     'assets/pro_isay_web/4.webp',
   ];
+
+  static const stackingIcon = 'assets/pro_stacking_app/icon.webp';
+  static const stackingScreens = [
+    'assets/pro_stacking_app/a1.webp',
+    'assets/pro_stacking_app/a2.webp',
+    'assets/pro_stacking_app/a3.webp',
+    'assets/pro_stacking_app/a4.webp',
+    'assets/pro_stacking_app/a5.webp',
+  ];
 }

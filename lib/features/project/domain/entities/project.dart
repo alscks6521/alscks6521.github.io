@@ -9,10 +9,12 @@ class ProjectItem {
   final List<String> skills, screens;
   final List<String> highlights; // 그리드 카드에 보여줄 핵심 기술 몇 개
   final bool released; // App Store · Google Play 출시 여부 (뱃지 표시)
+  final String appStoreUrl, playStoreUrl; // 상세 화면 뱃지를 누르면 열리는 스토어 주소
+  final String webUrl; // 웹 버전 주소 (상세 화면에 웹 뱃지로 표시)
 
   // 한눈에 보기
   final String category; // 구분 예) 전 직장 프로젝트, 개인 프로젝트
-  final String period; // 개발 기간 예) 2024.03 ~ 2024.12
+  final String period; // 개발 기간 예) 2024.03 ~ 2024.12 (비우면 상세에서 항목 자체를 숨김)
   final String team; // 참여 인원 예) 4명 (FE 1, BE 2, 디자인 1)
   final String role; // 담당 역할 예) Flutter 앱 개발 전체
 
@@ -30,6 +32,9 @@ class ProjectItem {
     this.screens = const [],
     this.highlights = const [],
     this.released = false,
+    this.appStoreUrl = '',
+    this.playStoreUrl = '',
+    this.webUrl = '',
     this.category = '',
     this.period = '',
     this.team = '',

@@ -77,6 +77,7 @@ flutter:
     - assets/n_images/
     - assets/pro_isay_app/
     - assets/pro_isay_web/
+    - assets/pro_stacking_app/
 
   fonts:
     - family: SUIT
